@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/config/prisma/prisma.service';
 import { HelperService } from 'src/utils/helper.service';
 import {
   CreateUserDto,
@@ -13,7 +13,7 @@ import {
   ResponseDto,
   ResetPasswordDto,
 } from './dto/user.dto';
-import { EmailService } from 'src/emailservice/mailer.service';
+import { EmailService } from 'src/common/email/mailer.service';
 
 @Injectable()
 export class UserService {
