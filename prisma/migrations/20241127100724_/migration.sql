@@ -8,6 +8,7 @@ CREATE TABLE "User" (
     "dateOfBirth" TEXT,
     "country" TEXT,
     "phoneOtp" TEXT,
+    "resetOtp" TEXT,
     "password" TEXT,
     "bvn" TEXT,
     "nin" TEXT,

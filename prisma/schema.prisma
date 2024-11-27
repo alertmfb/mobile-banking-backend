@@ -24,6 +24,7 @@ model User {
   dateOfBirth   String? 
   country       String?
   phoneOtp      String?
+  resetOtp      String?
   password      String?
   bvn           String?
   nin           String?
