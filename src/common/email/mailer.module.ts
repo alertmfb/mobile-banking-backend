@@ -22,7 +22,7 @@ dotenv.config();
           from: process.env.MAIL_SENDER,
         },
         template: {
-          dir: join(__dirname, '../../src/templates'),
+          dir: join(__dirname, '../../templates'),
           adapter: new EjsAdapter(),
           options: {
             strict: false,

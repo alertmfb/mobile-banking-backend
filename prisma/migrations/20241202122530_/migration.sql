@@ -20,8 +20,8 @@ CREATE TABLE "User" (
     "email" TEXT,
     "dateOfBirth" TEXT,
     "country" TEXT,
-    "phoneOtp" TEXT,
     "resetOtp" TEXT,
+    "otpExpiry" TIMESTAMP(3),
     "password" TEXT,
     "bvn" TEXT,
     "nin" TEXT,
@@ -36,9 +36,6 @@ CREATE TABLE "User" (
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "PhoneNumber_phoneNumber_key" ON "PhoneNumber"("phoneNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_phoneNumber_key" ON "User"("phoneNumber");

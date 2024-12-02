@@ -58,6 +58,7 @@ export class CreatedUserResponseDto {
     city?: string;
     address?: string;
     zipCode?: string;
+    dateOfBirth?: string;
     username?: string;
     createdAt: Date;
     updatedAt: Date;
