@@ -11,7 +11,7 @@ import {
   EmailDto,
   UserCredentialDto,
   ResponseDto,
-  ResetPasswordDto,
+  OtpVerificationDto,
 } from './dto/user.dto';
 import { EmailService } from 'src/common/email/mailer.service';
 
@@ -30,20 +30,59 @@ export class UserService {
       });
       if (existingUser) {
         throw new BadRequestException(
-          `Phone number ${phoneNumber} already exists.`,
+          `Phone number ${phoneNumber} already used.`,
         );
       }
-      const otp = await this.helperService.generateOtp();
-
-      const newUser = await this.prisma.user.create({
-        data: { phoneNumber: phoneNumber, phoneOtp: otp },
+      const existingPhone = await this.prisma.phoneNumber.findFirst({
+        where: { phoneNumber: phoneNumber },
       });
 
-      const response: ResponseDto = {
+      const otp = await this.helperService.generateOtp();
+      const otpExpiry = new Date();
+      otpExpiry.setMinutes(otpExpiry.getMinutes() + 5);
+
+      const result = await this.prisma.phoneNumber.create({
+        data: {
+          phoneNumber: phoneNumber,
+          otp: otp,
+          otpExpiry: otpExpiry,
+          verificationStatus: false,
+        },
+      });
+      console.log(result);
+      //TODO: SMS
+      return {
         message: `Phone number has been added successfully.`,
         statusCode: 200,
       };
-      return response;
+    } catch (error) {
+      return error.response;
+    }
+  }
+
+  async verifyPhoneOtp(verifyOtpDto: OtpVerificationDto): Promise<ResponseDto> {
+    try {
+      const check = await this.prisma.phoneNumber.findFirst({
+        where: { otp: verifyOtpDto?.otp },
+      });
+      if (!check) {
+        throw new BadRequestException('Invalid OTPs');
+      }
+
+      const currentTime = new Date();
+      if (currentTime > check.otpExpiry) {
+        throw new BadRequestException(`OTP has expired.`);
+      }
+
+      await this.prisma.phoneNumber.update({
+        where: { id: check.id },
+        data: { verificationStatus: true },
+      });
+
+      return {
+        message: `OTP verified successfully.`,
+        statusCode: 200,
+      };
     } catch (error) {
       return error.response;
     }
@@ -51,13 +90,8 @@ export class UserService {
 
   async createUser(
     createUserDto: CreateUserDto,
-    phoneNumber: string,
   ): Promise<CreatedUserResponseDto> {
     try {
-      const existingUser = await this.prisma.user.findFirst({
-        where: { phoneNumber: phoneNumber },
-      });
-
       const cryptedPassword = await this.helperService.hasher(
         createUserDto?.password,
         12,
@@ -74,6 +108,7 @@ export class UserService {
         password: cryptedPassword,
         transactionPin: cryptedPin,
         country: createUserDto.country,
+        phoneNumber: createUserDto.phoneNumber,
         nin: createUserDto.nin,
         bvn: createUserDto.bvn,
         city: createUserDto.city,
@@ -84,8 +119,7 @@ export class UserService {
         dateOfBirth: createUserDto.dateOfBirth,
       };
 
-      const user = await this.prisma.user.update({
-        where: { phoneNumber: phoneNumber },
+      const user = await this.prisma.user.create({
         data: requireData,
       });
 
@@ -231,11 +265,11 @@ export class UserService {
   }
 
   async verifyResetOtp(
-    resetPasswordDto: ResetPasswordDto,
+    OtpVerificationDto: OtpVerificationDto,
   ): Promise<ResponseDto> {
     try {
       const checkUser = await this.prisma.user.findFirst({
-        where: { resetOtp: resetPasswordDto?.otp },
+        where: { resetOtp: OtpVerificationDto?.otp },
       });
 
       if (!checkUser) {

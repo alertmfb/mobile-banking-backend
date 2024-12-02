@@ -11,6 +11,8 @@ export class CreateUserDto {
   @ApiProperty()
   password: string;
   @ApiProperty()
+  phoneNumber: string;
+  @ApiProperty()
   transactionPin: string;
   @ApiProperty()
   country: string;
@@ -72,7 +74,7 @@ export class EmailDto {
   email: string;
 }
 
-export class ResetPasswordDto {
+export class OtpVerificationDto {
   @ApiProperty()
   otp: string;
 }
