@@ -2,16 +2,20 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { HelperService } from 'src/utils/helper.service';
 import {
   CreateUserDto,
   CreatedUserResponseDto,
-  EmailDto,
   UserCredentialDto,
   ResponseDto,
   OtpVerificationDto,
+  OtpType,
+  TransactionPinDto,
+  requestOtpDto,
+  ResetPasswordDto,
 } from './dto/user.dto';
 import { EmailService } from 'src/common/email/mailer.service';
 
@@ -129,12 +133,12 @@ export class UserService {
         throw new BadRequestException('Phone number is not verified');
       }
 
-      const cryptedPassword = await this.helperService.hasher(
+      const hashedPassword = await this.helperService.hasher(
         createUserDto?.password,
         12,
       );
 
-      const cryptedPin = await this.helperService.hasher(
+      const hashedPin = await this.helperService.hasher(
         createUserDto?.transactionPin,
         4,
       );
@@ -142,8 +146,8 @@ export class UserService {
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
         email: createUserDto.email,
-        password: cryptedPassword,
-        transactionPin: cryptedPin,
+        password: hashedPassword,
+        transactionPin: hashedPin,
         country: createUserDto.country,
         phoneNumber: createUserDto.phoneNumber,
         nin: createUserDto.nin,
@@ -153,7 +157,7 @@ export class UserService {
         state: createUserDto.state,
         zipCode: createUserDto.zipCode,
         username: createUserDto.username,
-        dateOfBirth: createUserDto.dateOfBirth,
+        dateOfBirth: new Date(createUserDto.dateOfBirth),
       };
 
       const user = await this.prisma.user.create({
@@ -200,7 +204,7 @@ export class UserService {
           state: user.state,
           zipCode: user.zipCode,
           username: user.username,
-          dateOfBirth: user.dateOfBirth,
+          dateOfBirth: user.dateOfBirth.toISOString().split('T')[0],
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -229,7 +233,7 @@ export class UserService {
       );
 
       if (!checkPassword) {
-        throw new BadRequestException('Invalid credentials!');
+        throw new UnauthorizedException('Invalid credentials!');
       }
 
       const jwtPayload = { sub: existingUser.id, email: existingUser.email };
@@ -252,7 +256,7 @@ export class UserService {
           address: existingUser.address,
           state: existingUser.state,
           zipCode: existingUser.zipCode,
-          dateOfBirth: existingUser.dateOfBirth,
+          dateOfBirth: existingUser.dateOfBirth.toISOString().split('T')[0],
           username: existingUser.username,
           createdAt: existingUser.createdAt,
           updatedAt: existingUser.updatedAt,
@@ -266,10 +270,10 @@ export class UserService {
     }
   }
 
-  async forgotPassword(emailDto: EmailDto): Promise<ResponseDto> {
+  async requestOtp(requestOtpDto: requestOtpDto): Promise<ResponseDto> {
     try {
       const existingUser = await this.prisma.user.findUnique({
-        where: { email: emailDto.email },
+        where: { email: requestOtpDto.email },
       });
       if (!existingUser) {
         throw new NotFoundException('User with this email does not exist');
@@ -279,24 +283,28 @@ export class UserService {
       const otpExpiry = new Date();
       otpExpiry.setMinutes(otpExpiry.getMinutes() + 5);
 
-      const updatedUser = await this.prisma.user.update({
+      await this.prisma.user.update({
         where: { email: existingUser.email },
         data: { resetOtp: otp, otpExpiry: otpExpiry },
       });
 
-      const url = otp;
       //send user email
-      const subject = 'Reset Password.';
-      const payload = {
-        name: existingUser?.firstName,
-        url: otp,
-      };
-      const recipientEmail = existingUser.email;
+      const emailTemplate =
+        requestOtpDto.type === OtpType.PASSWORD_RESET
+          ? 'resetLink'
+          : 'transactionPinLink';
+
+      const subject =
+        requestOtpDto.type === OtpType.PASSWORD_RESET
+          ? 'Reset Password'
+          : 'Transaction PIN Update';
+
+      const payload = { name: existingUser.firstName, url: otp };
 
       await this.emailService.sendMail(
-        recipientEmail,
+        existingUser.email,
         subject,
-        'resetLink',
+        emailTemplate,
         payload,
       );
 
@@ -343,24 +351,24 @@ export class UserService {
       return error.response;
     }
   }
-  async resetPassword(userCredential: UserCredentialDto): Promise<ResponseDto> {
+  async resetPassword(userCredential: ResetPasswordDto): Promise<ResponseDto> {
     try {
       const checkUser = await this.prisma.user.findFirst({
-        where: { email: userCredential.email },
+        where: { id: userCredential.id },
       });
 
       if (!checkUser) {
         throw new NotFoundException('User not found');
       }
 
-      const cryptedPassword = await this.helperService.hasher(
+      const hashedPassword = await this.helperService.hasher(
         userCredential?.password,
         12,
       );
 
       const updateUser = await this.prisma.user.update({
-        where: { email: checkUser.email },
-        data: { password: cryptedPassword },
+        where: { id: checkUser.id },
+        data: { password: hashedPassword },
       });
 
       if (!updateUser) {
@@ -369,6 +377,84 @@ export class UserService {
 
       return {
         message: 'Password reset successfully',
+        statusCode: 200,
+      };
+    } catch (error) {
+      return error.response;
+    }
+  }
+
+  async getProfile(identifier: string): Promise<CreatedUserResponseDto> {
+    try {
+      const existingUser = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: identifier },
+            { phoneNumber: identifier },
+            { username: identifier },
+          ],
+        },
+      });
+      if (!existingUser) {
+        throw new NotFoundException('User with this email does not exist');
+      }
+      const response: CreatedUserResponseDto = {
+        message: 'User fetched successfully',
+        data: {
+          id: existingUser.id,
+          firstName: existingUser.firstName,
+          lastName: existingUser.lastName,
+          email: existingUser.email,
+          phoneNumber: existingUser.phoneNumber,
+          country: existingUser.country,
+          nin: existingUser.nin,
+          bvn: existingUser.bvn,
+          city: existingUser.city,
+          address: existingUser.address,
+          state: existingUser.state,
+          zipCode: existingUser.zipCode,
+          dateOfBirth: existingUser.dateOfBirth.toISOString().split('T')[0],
+          username: existingUser.username,
+          createdAt: existingUser.createdAt,
+          updatedAt: existingUser.updatedAt,
+        },
+        statusCode: 200,
+      };
+
+      return response;
+    } catch (error) {
+      return error.response;
+    }
+  }
+
+  async resetTransactionPin(payload: TransactionPinDto): Promise<ResponseDto> {
+    try {
+      const checkUser = await this.prisma.user.findUnique({
+        where: { id: payload.id },
+      });
+
+      if (!checkUser) {
+        throw new NotFoundException('User not found');
+      }
+
+      const hashedPin = await this.helperService.hasher(
+        payload.transactionPin,
+        12,
+      );
+
+      const updateUser = await this.prisma.user.update({
+        where: { id: checkUser.id },
+        data: { transactionPin: hashedPin },
+      });
+
+      if (!updateUser) {
+        throw new BadRequestException(
+          'Error occured while resetting transaction pin',
+        );
+      }
+
+      return {
+        message: 'Transaction pin reset successfully',
         statusCode: 200,
       };
     } catch (error) {

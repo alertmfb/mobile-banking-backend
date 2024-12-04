@@ -30,7 +30,7 @@ model User {
   lastName      String?
   phoneNumber   String @unique
   email         String? @unique
-  dateOfBirth   String?
+  dateOfBirth   DateTime?
   country       String?
   resetOtp      String?
   otpExpiry     DateTime?
@@ -45,4 +45,8 @@ model User {
   transactionPin String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([phoneNumber])
+  @@index([email])
+  @@index([username])
 }

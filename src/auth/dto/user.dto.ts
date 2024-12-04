@@ -1,11 +1,14 @@
-import { IsEmail } from 'class-validator';
+import { IsEmail, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 export class CreateUserDto {
   @ApiProperty()
   firstName: string;
   @ApiProperty()
   lastName: string;
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Email of the user',
+    default: 'test@gmail.com',
+  })
   @IsEmail()
   email: string;
   @ApiProperty()
@@ -30,7 +33,10 @@ export class CreateUserDto {
   zipCode: string;
   @ApiProperty()
   username: string;
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Date of Birth of the user',
+    default: '2024-12-02',
+  })
   dateOfBirth: string;
 }
 
@@ -42,6 +48,13 @@ export class UserCredentialDto {
   password: string;
 }
 
+export class ResetPasswordDto {
+  @ApiProperty()
+  @IsNumber()
+  id: number;
+  @ApiProperty()
+  password: string;
+}
 export class CreatedUserResponseDto {
   message: string;
   data: {
@@ -70,12 +83,31 @@ export class ResponseDto {
   statusCode: number;
 }
 
-export class EmailDto {
+export class requestOtpDto {
   @ApiProperty()
   email: string;
+  @ApiProperty({
+    default: 'PasswordReset',
+    description:
+      'The request OTP type. It can be, passwordReset, or transactionPin.',
+  })
+  type: OtpType;
 }
 
 export class OtpVerificationDto {
   @ApiProperty()
   otp: string;
+}
+
+export enum OtpType {
+  PASSWORD_RESET = 'passwordReset',
+  TRANSACTION_PIN = 'transactionPin',
+}
+
+export class TransactionPinDto {
+  @ApiProperty()
+  @IsNumber()
+  id: number;
+  @ApiProperty()
+  transactionPin: string;
 }

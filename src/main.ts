@@ -5,8 +5,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('Alert Mobile')
-    .setDescription('This is Alert Mobile APIs')
+    .setTitle('Alert MFB Mobile')
+    .setDescription('Alert Mobile APIs Management')
     .setVersion('1.0')
     .build();
 

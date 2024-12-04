@@ -1,14 +1,16 @@
-import { Controller, Post, Param, Put, Body } from '@nestjs/common';
+import { Controller, Post, Param, Body, Get } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
   CreateUserDto,
   CreatedUserResponseDto,
-  EmailDto,
+  requestOtpDto,
   OtpVerificationDto,
   ResponseDto,
+  TransactionPinDto,
   UserCredentialDto,
+  ResetPasswordDto,
 } from './dto/user.dto';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiParam } from '@nestjs/swagger';
 
 @Controller('users')
 export class UserController {
@@ -24,7 +26,7 @@ export class UserController {
       throw error;
     }
   }
-  @Put('phone/verify')
+  @Post('phone/verify')
   async verifyPhoneOtp(
     @Body() verifyOtpDto: OtpVerificationDto,
   ): Promise<ResponseDto> {
@@ -45,10 +47,22 @@ export class UserController {
   ): Promise<CreatedUserResponseDto> {
     return await this.userService.loginUser(loginDto);
   }
+  @Get('user-profile/:identifier')
+  @ApiParam({
+    name: 'identifier',
+    description:
+      'The unique identifier of the user. It can be email, phone number, or username.',
+    required: true,
+  })
+  async getProfile(
+    @Param('identifier') identifier: string,
+  ): Promise<ResponseDto> {
+    return await this.userService.getProfile(identifier);
+  }
 
-  @Post('forgot-password')
-  async forgotPassword(@Body() emailDto: EmailDto): Promise<ResponseDto> {
-    return await this.userService.forgotPassword(emailDto);
+  @Post('request-otp')
+  async requestOTP(@Body() requestOtpDto: requestOtpDto): Promise<ResponseDto> {
+    return await this.userService.requestOtp(requestOtpDto);
   }
 
   @Post('verifyOTP')
@@ -60,8 +74,15 @@ export class UserController {
 
   @Post('reset-password')
   async resetPassword(
-    @Body() OtpVerificationDto: UserCredentialDto,
+    @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<ResponseDto> {
-    return await this.userService.resetPassword(OtpVerificationDto);
+    return await this.userService.resetPassword(resetPasswordDto);
+  }
+
+  @Post('reset-transaction-pin')
+  async resetTransactionPin(
+    @Body() transactionPinDto: TransactionPinDto,
+  ): Promise<ResponseDto> {
+    return await this.userService.resetTransactionPin(transactionPinDto);
   }
 }
