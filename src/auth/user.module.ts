@@ -13,6 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
     PrismaModule,
     HelperModule,
     EmailModule,
+
     JwtModule.register({
       global: true,
       secret: process.env.TOKEN_USER_SECRET,

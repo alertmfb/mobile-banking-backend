@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body, Get } from '@nestjs/common';
+import { Controller, Post, Param, Body, Get, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
   CreateUserDto,
@@ -10,7 +10,8 @@ import {
   UserCredentialDto,
   ResetPasswordDto,
 } from './dto/user.dto';
-import { ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
+import { AuthGuard } from './auth.guard';
 
 @Controller('users')
 export class UserController {
@@ -47,6 +48,9 @@ export class UserController {
   ): Promise<CreatedUserResponseDto> {
     return await this.userService.loginUser(loginDto);
   }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard)
   @Get('user-profile/:identifier')
   @ApiParam({
     name: 'identifier',
@@ -79,6 +83,8 @@ export class UserController {
     return await this.userService.resetPassword(resetPasswordDto);
   }
 
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
   @Post('reset-transaction-pin')
   async resetTransactionPin(
     @Body() transactionPinDto: TransactionPinDto,
