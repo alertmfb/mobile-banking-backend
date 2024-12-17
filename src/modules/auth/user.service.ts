@@ -183,7 +183,8 @@ export class UserService {
       await this.emailService.sendMail(
         recipientEmail,
         subject,
-        'welcomeUser',
+        // 'welcomeUser',
+        'emaill',
         payload,
       );
 
@@ -291,8 +292,8 @@ export class UserService {
       //send user email
       const emailTemplate =
         requestOtpDto.type === OtpType.PASSWORD_RESET
-          ? 'resetLink'
-          : 'transactionPinLink';
+          ? 'password'
+          : 'transactionPin';
 
       const subject =
         requestOtpDto.type === OtpType.PASSWORD_RESET
