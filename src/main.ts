@@ -1,31 +1,34 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
-import * as dotenv from 'dotenv';
-
-dotenv.config();
+import { Logger } from '@nestjs/common';
+import { ValidationPipe } from './utils/pipes/validation.pipe';
+import { corsOption } from './shared/config/cors.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('/api/v1');
+  app.useGlobalPipes(new ValidationPipe());
+  app.enableCors(corsOption);
 
-  const config = new DocumentBuilder()
-    .setTitle('Alert MFB Mobile')
-    .setDescription('Alert Mobile APIs Management')
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('API Documentation')
+    .setDescription('The Alert Mobile API description')
     .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Enter your JWT token here',
-      },
-      'access-token',
-    )
+    .addTag('alert-mobile')
     .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, document);
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-  await app.listen(3000);
+  Logger.log(
+    `Server running on http://localhost:${process.env.PORT ?? 4000}`,
+    'Bootstrap',
+  );
+  Logger.log(
+    `Swagger running on http://localhost:${process.env.PORT ?? 4000}/docs`,
+    'Bootstrap',
+  );
+
+  await app.listen(process.env.PORT ?? 4000);
 }
 bootstrap();

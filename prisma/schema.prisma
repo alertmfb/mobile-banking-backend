@@ -13,40 +13,123 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-model PhoneNumber {
-  id            Int      @id @default(autoincrement())
-  phoneNumber   String 
-  otp           String
-  otpExpiry     DateTime
-  verificationStatus Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+enum OnboardEnum {
+  NEW
+  INITIATED
+  PHONE_VERIFIED
+  SET_EMAIL
+  EMAIL_VERIFIED
+  SET_PASSCODE
+  SET_PIN
+  KYB_STARTED
+  KYB_SUBMITTED
+  KYB_APPROVED
+  KYB_FAILED
+  COMPLETED
 }
 
-model User {
-  id            Int      @id @default(autoincrement())
-  firstName     String?
-  lastName      String?
-  phoneNumber   String @unique
-  email         String? @unique
-  dateOfBirth   DateTime?
-  country       String?
-  resetOtp      String?
-  otpExpiry     DateTime?
-  password      String?
-  bvn           String?
-  nin           String?
-  address       String?
-  city          String?
-  state         String?
-  zipCode       String?
-  username      String? @unique
-  transactionPin String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+enum AccountProviderEnum {
+  BANKONE
+}
 
+enum GenderEnum {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum OnboardType {
+  NEW
+  EXISTING
+}
+
+enum LoginEnum {
+  INITIATED
+  PHONE_VERIFIED
+  LOGGED_IN
+}
+
+
+model User {
+  id                 String               @id @default(cuid())
+  email              String?              @unique
+  username           String?              @unique
+  firstName          String?
+  lastName           String?
+  otherName          String?
+  gender             GenderEnum?
+  reference          String?
+  password           String?
+  passcode           String?
+  pin                String?
+  dob                String?
+  pob                String?
+  country            String?
+  phoneNumber        String               @unique
+  onboardType        OnboardType          @default(NEW)
+  onboarding         OnboardEnum          @default(NEW)
+  login              LoginEnum            @default(INITIATED)
+  loginAttempts      Int                  @default(0)
+  lastLogin          DateTime?
+  accounts           Account[]
+  kyc                Kyc[]
+  token              String?
+  otp                String?
+  otpExpires         DateTime?
+  otpId              String?
+  isDeleted          Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  ResidentialAddress ResidentialAddress[]
+
+  @@map("users")
   @@index([phoneNumber])
   @@index([email])
-  @@index([username])
+  @@index([id])
+}
+
+model Account {
+  id            String              @id @default(uuid())
+  cusomterId    String?
+  trackingRef   String?
+  accountNumber String              @unique
+  user          User                @relation(fields: [userId], references: [id])
+  userId        String              @unique
+  provider      AccountProviderEnum @default(BANKONE)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@map("accounts")
+}
+
+model ResidentialAddress {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  address   String
+  city      String
+  state     String
+  zipcode   String
+  landmark  String
+  lga       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("residential_addresses")
+}
+
+model Kyc {
+  id                       String   @id @default(uuid())
+  user                     User     @relation(fields: [userId], references: [id])
+  userId                   String   @unique
+  nationalityStatus        Boolean  @default(false)
+  faceVerifyStatus         Boolean  @default(false)
+  ninStatus                Boolean  @default(false)
+  bvnStatus                Boolean  @default(false)
+  residentialAddressStatus Boolean  @default(false)
+  attestation              Boolean  @default(false)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@map("kycs")
 }

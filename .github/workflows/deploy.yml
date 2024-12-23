@@ -1,0 +1,59 @@
+name: Deploy Business Banking Sandbox
+
+on:
+  push:
+    branches:
+      - sandbox
+
+jobs:
+  build-sandbox:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/sandbox'
+
+    steps:
+      - name: Deploy to sandbox on VPS
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY_BASE64 }}" | base64 -d > /tmp/vps-key.pem
+          chmod 600 /tmp/vps-key.pem
+          ssh -i /tmp/vps-key.pem -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_ed25519_business-banking-backend
+          cd /var/www/hosts/business-backend/sandbox
+          git pull origin sandbox
+          touch .env
+          echo "NODE_ENV=production" >> .env
+          echo "COMPOSE_PROJECT_NAME=sandbox" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "MESSAGING_URL=${{ secrets.MESSAGING_URL }}" >> .env
+          echo "MESSAGING_KEY=${{ secrets.MESSAGING_KEY }}" >> .env
+          echo "KYB_URL=${{ secrets.KYB_URL }}" >> .env
+          echo "KYB_KEY=${{ secrets.KYB_KEY }}" >> .env
+          docker compose --env-file .env -f compose.sandbox.yml up --build -d
+          EOF
+
+  build-prod:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy Production Environment on VPS
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY_BASE64 }}" | base64 -d > /tmp/vps-key.pem
+          chmod 600 /tmp/vps-key.pem
+          ssh -i /tmp/vps-key.pem -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_ed25519_banking-services
+          cd /var/www/hosts/bank-one/prod
+          git pull origin bank-one
+          touch .env
+          echo "NODE_ENV=production" >> .env
+          echo "COMPOSE_PROJECT_NAME=bank-one" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "MESSAGING_URL=${{ secrets.MESSAGING_URL }}" >> .env
+          echo "MESSAGING_KEY=${{ secrets.MESSAGING_KEY }}" >> .env
+          echo "KYB_URL=${{ secrets.KYB_URL }}" >> .env
+          echo "KYB_KEY=${{ secrets.KYB_KEY }}" >> .env
+          docker compose --env-file .env -f compose.prod.yml up --build -d
+          EOF
