@@ -1,9 +1,10 @@
-name: Deploy Business Banking Sandbox
+name: Deploy Mobile Banking Sandbox
 
 on:
   push:
     branches:
       - sandbox
+      - master
 
 jobs:
   build-sandbox:
@@ -11,14 +12,14 @@ jobs:
     if: github.ref == 'refs/heads/sandbox'
 
     steps:
-      - name: Deploy to sandbox on VPS
+      - name: Deploy to Sandbox on VPS
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY_BASE64 }}" | base64 -d > /tmp/vps-key.pem
           chmod 600 /tmp/vps-key.pem
           ssh -i /tmp/vps-key.pem -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
           eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_ed25519_business-banking-backend
-          cd /var/www/hosts/business-backend/sandbox
+          ssh-add ~/.ssh/id_ed25519_mobile-banking-backend
+          cd /var/www/hosts/mobile-backend/sandbox
           git pull origin sandbox
           touch .env
           echo "NODE_ENV=production" >> .env
@@ -34,7 +35,7 @@ jobs:
 
   build-prod:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
 
     steps:
       - name: Deploy Production Environment on VPS
@@ -44,8 +45,8 @@ jobs:
           ssh -i /tmp/vps-key.pem -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/id_ed25519_banking-services
-          cd /var/www/hosts/bank-one/prod
-          git pull origin bank-one
+          cd /var/www/hosts/mobile-backend/prod
+          git pull origin master
           touch .env
           echo "NODE_ENV=production" >> .env
           echo "COMPOSE_PROJECT_NAME=bank-one" >> .env
