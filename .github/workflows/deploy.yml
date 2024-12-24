@@ -18,7 +18,7 @@ jobs:
           chmod 600 /tmp/vps-key.pem
           ssh -i /tmp/vps-key.pem -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
           eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_ed25519_mobile-banking-backend
+          ssh-add ~/.ssh/id_ed25519_mobile-backend
           cd /var/www/hosts/mobile-backend/sandbox
           git pull origin sandbox
           touch .env
