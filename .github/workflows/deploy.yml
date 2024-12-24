@@ -30,7 +30,7 @@ jobs:
           echo "MESSAGING_KEY=${{ secrets.MESSAGING_KEY }}" >> .env
           echo "KYB_URL=${{ secrets.KYB_URL }}" >> .env
           echo "KYB_KEY=${{ secrets.KYB_KEY }}" >> .env
-          docker compose --env-file .env -f compose.sandbox.yml up --build
+          docker compose --env-file .env -f compose.sandbox.yml up --build -d
           EOF
 
   build-prod:
