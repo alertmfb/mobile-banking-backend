@@ -160,9 +160,6 @@ export class AuthService {
   async initiateSignUp(payload: InitiateSignUpDto): Promise<any> {
     try {
       const { phoneNumber, onboardType } = payload;
-
-      console.log(payload);
-
       if (onboardType === 'EXISTING') {
         return await this.handleExistingUser(phoneNumber);
       }

@@ -29,7 +29,7 @@ export class InitiateSignUpDto {
   @Validate(IsPhoneOrAccountConstraint)
   @ApiProperty({
     required: true,
-    example: '08012345678 or 1100063555',
+    example: '08012345678 or 1100063641',
     description: 'Nigerian phone number or 10-digit account number',
   })
   phoneNumber: string;

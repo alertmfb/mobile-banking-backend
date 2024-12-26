@@ -18,5 +18,6 @@ export class SetEmailDto {
   @IsDefined()
   @IsNotEmpty()
   @IsEmail({}, { message: 'Invalid email.' })
+  @ApiProperty({ required: true, example: 'example@gmail.com' })
   email: string;
 }
