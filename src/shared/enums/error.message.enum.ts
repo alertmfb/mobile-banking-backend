@@ -31,4 +31,6 @@ export enum ErrorMessages {
   CANNOT_VERIFY_EMAIL_AGAIN = 'Cannot verify email again',
   EMAIL_MISMATCH = 'Email mismatch',
   PHONE_IN_USE = 'Phone number in use',
+  BVN_MISMATCH = 'BVN mismatch',
+  PHONE_NUMBER_NOT_FOUND = 'Phone number not found',
 }

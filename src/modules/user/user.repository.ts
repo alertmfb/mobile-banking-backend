@@ -57,7 +57,7 @@ export class UserRepository {
    *  Gets all user in the databse
    *
    * @param {GetAllUserQueryDto} query
-   * @returns {Promise<{ users: User[]; total: number }>}
+   * @returns {Promise<{ users: User[]; total: string }>}
    */
   async findAll(query: GetAllUserQueryDto) {
     const { page = 1, perPage = 10, keyword, role } = query;
@@ -113,11 +113,11 @@ export class UserRepository {
 
   /**
    * Find user by id
-   * @param {number} id
+   * @param {string} id
    * @returns {Promise<User | null>}
    */
   async findById(id: string): Promise<User | null> {
-    return this.prismaService.user.findUnique({
+    return await this.prismaService.user.findFirst({
       where: { id },
     });
   }
@@ -125,7 +125,7 @@ export class UserRepository {
   /**
    * Update user by id
    *
-   * @param {number} id
+   * @param {string} id
    * @param {Prisma.UserUpdateInput} data
    * @returns {Promise<User>}
    */

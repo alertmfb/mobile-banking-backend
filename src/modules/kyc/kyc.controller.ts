@@ -20,6 +20,7 @@ import { User } from 'src/shared/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/shared/guards/jwt.guard';
 import { JwtPayload } from 'src/shared/interfaces/jwt-payload.interface';
 import { AttestDto } from './dto/attest.dto';
+import { VerifyBvnOtpDto } from './dto/verify-bvn-otp.dto';
 
 @ApiTags('Know your Customer')
 @Controller('kyc')
@@ -37,6 +38,50 @@ export class KycController {
       const userId = user.id;
       const response = await this.kybService.setNationality(userId, payload);
       return new SuccessResponseDto(SuccessMessage.SET_NATIONALITY, response);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('validate-bvn')
+  @ApiBody({ type: BvnDto })
+  @UseGuards(JwtAuthGuard)
+  async validateBvn(@Body() payload: BvnDto, @User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const response = await this.kybService.validateBvn(userId, payload);
+      return new SuccessResponseDto(SuccessMessage.SET_BVN, response);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('retrieve-bvn-details')
+  @UseGuards(JwtAuthGuard)
+  async retrieveBvnDetails(@User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const response = await this.kybService.retrieveBvnDetails(userId);
+      return new SuccessResponseDto(
+        SuccessMessage.BVN_DETAILS_FETCHED,
+        response,
+      );
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('verify-bvn-otp')
+  @ApiBody({ type: VerifyBvnOtpDto })
+  @UseGuards(JwtAuthGuard)
+  async verifyBvnOtp(
+    @Body() payload: VerifyBvnOtpDto,
+    @User() user: JwtPayload,
+  ) {
+    try {
+      const userId = user.id;
+      const response = await this.kybService.verifyBvnOtp(userId, payload);
+      return new SuccessResponseDto(SuccessMessage.SET_BVN, response);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

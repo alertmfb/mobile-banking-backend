@@ -164,16 +164,6 @@ export class AuthController {
     }
   }
 
-  @Post('signup/complete')
-  async completeSignUp() {
-    try {
-      const response = await this.authService.completeSignUp();
-      return new SuccessResponseDto(SuccessMessage.SIGNUP_COMPLETED, response);
-    } catch (e) {
-      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
   @Post('passcode/reset/request')
   async requestReset(@Body() payload: VerifyOtpDto) {
     try {

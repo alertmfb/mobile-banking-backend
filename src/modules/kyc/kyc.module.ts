@@ -9,12 +9,14 @@ import { KycServiceProvider } from './providers';
 import { UserService } from '../user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRepository } from '../user/user.repository';
+import { MessagingModule } from '../messaging/messaging.module';
 
 @Module({
   imports: [
     HttpModule,
     ConfigModule,
     NestjsFormDataModule.config({ storage: MemoryStoredFile }),
+    MessagingModule,
   ],
   controllers: [KycController],
   providers: [

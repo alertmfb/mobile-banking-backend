@@ -23,4 +23,6 @@ export enum SuccessMessage {
   LOGIN_SUCCESS = 'Login successful',
   USERNAME_AVAILABLE = 'Username is available',
   ME = 'User details fetched successfully',
+  USERNAME_UPDATED = 'Username updated successfully',
+  BVN_DETAILS_FETCHED = 'BVN details fetched successfully',
 }

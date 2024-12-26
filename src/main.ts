@@ -15,6 +15,7 @@ async function bootstrap() {
     .setTitle('API Documentation')
     .setDescription('The Alert Mobile API description')
     .setVersion('1.0')
+    .addBearerAuth()
     .addTag('alert-mobile')
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
