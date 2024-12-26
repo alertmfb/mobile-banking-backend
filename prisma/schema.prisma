@@ -21,10 +21,6 @@ enum OnboardEnum {
   EMAIL_VERIFIED
   SET_PASSCODE
   SET_PIN
-  KYB_STARTED
-  KYB_SUBMITTED
-  KYB_APPROVED
-  KYB_FAILED
   COMPLETED
 }
 
@@ -49,6 +45,14 @@ enum LoginEnum {
   LOGGED_IN
 }
 
+enum KycEnum {
+  NEW
+  STARTED
+  SUBMITTED
+  APPROVED
+  FAILED
+}
+
 
 model User {
   id                 String               @id @default(cuid())
@@ -68,12 +72,15 @@ model User {
   phoneNumber        String               @unique
   onboardType        OnboardType          @default(NEW)
   onboarding         OnboardEnum          @default(NEW)
+  kycStatus          KycEnum              @default(NEW)
   login              LoginEnum            @default(INITIATED)
   loginAttempts      Int                  @default(0)
   lastLogin          DateTime?
   accounts           Account[]
   kyc                Kyc[]
   token              String?
+  bvnLookup          String?              @db.Text
+  ninLookup          String?              @db.Text
   otp                String?
   otpExpires         DateTime?
   otpId              String?
@@ -90,7 +97,7 @@ model User {
 
 model Account {
   id            String              @id @default(uuid())
-  cusomterId    String?
+  customerId    String?
   trackingRef   String?
   accountNumber String              @unique
   user          User                @relation(fields: [userId], references: [id])

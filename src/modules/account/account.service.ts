@@ -3,14 +3,15 @@ import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
-import { KycService } from '../kyc/kyc.service';
 import { AccountRepository } from './account.repository';
+import { Prisma } from '@prisma/client';
+import { KycService } from '../kyc/kyc.service';
 
 @Injectable()
 export class AccountService {
   private readonly coreBankingUrl;
   private readonly coreBankingAuthKey;
-  private readonly appEnv;
+  private readonly enviroment;
   private readonly headers;
   private readonly logger;
   constructor(
@@ -20,13 +21,13 @@ export class AccountService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
-    this.appEnv = this.configService.get<string>('APP_ENV') || 'dev';
+    this.enviroment = this.configService.get<string>('APP_ENV');
     this.coreBankingUrl =
-      this.appEnv == 'dev'
-        ? this.configService.get<string>('CORE_BANKING_SANDOX_URL')
-        : this.configService.get<string>('CORE_BANKING_LIVE_URL');
+      this.enviroment == 'production'
+        ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1'
+        : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1';
     this.coreBankingAuthKey =
-      this.appEnv == 'dev'
+      this.enviroment == 'production'
         ? this.configService.get<string>('CORE_BANKING_SANDOX_KEY')
         : this.configService.get<string>('CORE_BANKING_LIVE_KEY');
     this.headers = {
@@ -34,6 +35,15 @@ export class AccountService {
     };
     this.logger = new Logger(AccountService.name);
   }
+
+  async storeAccount(account: Prisma.AccountCreateInput) {
+    return this.accountRepository.create(account);
+  }
+
+  async findStoredByAccountNumber(accountNumber: string) {
+    return this.accountRepository.findByAccountNumber(accountNumber);
+  }
+
   async createAccount(userId: string) {
     try {
       const user = await this.userService.findOne(userId);
@@ -72,7 +82,7 @@ export class AccountService {
       };
 
       const response = await lastValueFrom(
-        this.httpService.post(`${this.coreBankingUrl}/account`, data, {
+        this.httpService.post(`${this.coreBankingUrl}/create-bank`, data, {
           headers: {
             Authorization: this.coreBankingAuthKey,
           },
@@ -93,7 +103,7 @@ export class AccountService {
           },
         },
         accountNumber: response.data.Message.AccountNumber,
-        cusomterId: response.data.Message.CustomerID,
+        customerId: response.data.Message.CustomerID,
         provider: 'BANKONE',
       });
 
@@ -109,5 +119,18 @@ export class AccountService {
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+  }
+
+  async getAccountByAccountNumber(accountNo: string) {
+    const response = await lastValueFrom(
+      this.httpService.get(
+        `${this.coreBankingUrl}/customers/get-by-accountNo`,
+        {
+          headers: this.headers,
+          params: { accountNo },
+        },
+      ),
+    );
+    return response.data;
   }
 }

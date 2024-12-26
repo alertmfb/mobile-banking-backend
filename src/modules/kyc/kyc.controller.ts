@@ -34,7 +34,7 @@ export class KycController {
     @User() user: JwtPayload,
   ) {
     try {
-      const userId = user.sub || user.id;
+      const userId = user.id;
       const response = await this.kybService.setNationality(userId, payload);
       return new SuccessResponseDto(SuccessMessage.SET_NATIONALITY, response);
     } catch (e) {
@@ -47,7 +47,7 @@ export class KycController {
   @UseGuards(JwtAuthGuard)
   async verifyBvn(@Body() payload: BvnDto, @User() user: JwtPayload) {
     try {
-      const userId = user.sub || user.id;
+      const userId = user.id;
       const response = await this.kybService.verifyBvn(userId, payload);
       return new SuccessResponseDto(SuccessMessage.SET_BVN, response);
     } catch (e) {
@@ -60,7 +60,7 @@ export class KycController {
   @UseGuards(JwtAuthGuard)
   async verifyNin(@Body() payload: NinDto, @User() user: JwtPayload) {
     try {
-      const userId = user.sub || user.id;
+      const userId = user.id;
       const response = await this.kybService.verifyNin(userId, payload);
       return new SuccessResponseDto(SuccessMessage.SET_NIN, response);
     } catch (e) {
@@ -73,7 +73,7 @@ export class KycController {
   @UseGuards(JwtAuthGuard)
   async faceVerify(@Body() payload: FaceVerifyDto, @User() user: JwtPayload) {
     try {
-      const userId = user.sub || user.id;
+      const userId = user.id;
       const response = await this.kybService.faceVerify(userId, payload);
       return new SuccessResponseDto(SuccessMessage.FACE_VERIFIED, response);
     } catch (e) {
@@ -89,7 +89,7 @@ export class KycController {
     @User() user: JwtPayload,
   ) {
     try {
-      const userId = user.sub || user.id;
+      const userId = user.id;
       const response = await this.kybService.residentialAddress(
         userId,
         payload,
@@ -108,7 +108,7 @@ export class KycController {
   @UseGuards(JwtAuthGuard)
   async attestation(@Body() payload: AttestDto, @User() user: JwtPayload) {
     try {
-      const userId = user.sub || user.id;
+      const userId = user.id;
       const response = await this.kybService.attestation(userId, payload);
       return new SuccessResponseDto(
         SuccessMessage.BUSINESS_VERIFY_COMPLETED,
@@ -123,7 +123,7 @@ export class KycController {
   @UseGuards(JwtAuthGuard)
   async getKyc(@User() user: JwtPayload) {
     try {
-      const userId = user.sub || user.id;
+      const userId = user.id;
       const response = await this.kybService.getKyc(userId);
       return new SuccessResponseDto(SuccessMessage.KYB_FETCHED, response);
     } catch (e) {

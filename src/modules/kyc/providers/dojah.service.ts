@@ -1,4 +1,4 @@
-import { BvnDto } from '../dto/bvn.dto';
+import { BvnDto } from './../dto/bvn.dto';
 import { ConfigService } from '@nestjs/config';
 import { KycProvider } from './kyc-provider.interface';
 import { HttpService } from '@nestjs/axios';
@@ -17,11 +17,16 @@ export class DojahService implements KycProvider {
   private readonly baseUrl;
   private readonly apiKey;
   private readonly header;
+  private readonly enviroment;
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.baseUrl = this.configService.get('KYB_URL');
+    this.enviroment = this.configService.get<string>('APP_ENV');
+    this.baseUrl =
+      this.enviroment === 'production'
+        ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1'
+        : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1';
     this.apiKey = this.configService.get('KYB_KEY');
     this.header = {
       authkey: this.apiKey,
@@ -29,8 +34,9 @@ export class DojahService implements KycProvider {
   }
 
   async verifyTin(tin: string): Promise<any> {
+    console.log(`${this.baseUrl}/verification/kyc/tin`);
     const response = await lastValueFrom(
-      this.httpService.get(`${this.baseUrl}/kyc/tin`, {
+      this.httpService.get(`${this.baseUrl}/verification/kyc/tin`, {
         headers: this.header,
         params: { tin },
       }),
@@ -41,7 +47,7 @@ export class DojahService implements KycProvider {
   async cacBasic(payload: CacBasicDto): Promise<any> {
     const { rcNumber, companyType } = payload;
     const response = await lastValueFrom(
-      this.httpService.get(`${this.baseUrl}/kyc/cac/basic`, {
+      this.httpService.get(`${this.baseUrl}/verification/kyc/cac/basic`, {
         headers: this.header,
         params: { rcNumber, companyType },
       }),
@@ -63,10 +69,13 @@ export class DojahService implements KycProvider {
   async bvnLooupBasic(payload: BvnDto): Promise<any> {
     const { bvn } = payload;
     const response = await lastValueFrom(
-      this.httpService.get(`${this.baseUrl}/kyc/bvn/lookup/basic`, {
-        headers: this.header,
-        params: { bvn },
-      }),
+      this.httpService.get(
+        `${this.baseUrl}/verification/kyc/bvn/lookup/basic`,
+        {
+          headers: this.header,
+          params: { bvn },
+        },
+      ),
     );
     return response.data;
   }
@@ -74,10 +83,13 @@ export class DojahService implements KycProvider {
   async bvnLookupAdvanced(payload: BvnDto): Promise<any> {
     const { bvn } = payload;
     const response = await lastValueFrom(
-      this.httpService.get(`${this.baseUrl}/kyc/bvn/lookup/advanced`, {
-        headers: this.header,
-        params: { bvn },
-      }),
+      this.httpService.get(
+        `${this.baseUrl}/verification/kyc/bvn/lookup/advanced`,
+        {
+          headers: this.header,
+          params: { bvn },
+        },
+      ),
     );
     return response.data;
   }
@@ -85,7 +97,7 @@ export class DojahService implements KycProvider {
   async bvnValidate(payload: ValidateBvnDto): Promise<any> {
     const { bvn, firstName, lastName, dob } = payload;
     const response = await lastValueFrom(
-      this.httpService.get(`${this.baseUrl}/kyc/bvn/validate`, {
+      this.httpService.get(`${this.baseUrl}/verification/kyc/bvn/validate`, {
         headers: this.header,
         params: { bvn, firstName, lastName, dob },
       }),
@@ -135,7 +147,7 @@ export class DojahService implements KycProvider {
 
   async ninLookup(nin: string): Promise<any> {
     const response = await lastValueFrom(
-      this.httpService.post(`${this.baseUrl}/kyc/nin/lookup`, {
+      this.httpService.get(`${this.baseUrl}/verification/kyc/nin/lookup`, {
         headers: this.header,
         params: { nin },
       }),
@@ -146,7 +158,7 @@ export class DojahService implements KycProvider {
   async individualAddress(payload: IndividualAddressVerifyDto): Promise<any> {
     const response = await lastValueFrom(
       this.httpService.post(
-        `${this.baseUrl}/address/individual/verify`,
+        `${this.baseUrl}/verification/address/individual`,
         payload,
         {
           headers: this.header,
@@ -159,8 +171,8 @@ export class DojahService implements KycProvider {
   async businessAddress(payload: BusinessAddressVerifyDto): Promise<any> {
     const response = await lastValueFrom(
       this.httpService.post(
-        `${this.baseUrl}/address/business/verify`,
-        payload,
+        `${this.baseUrl}/verification/address/business`,
+        { payload },
         {
           headers: this.header,
         },

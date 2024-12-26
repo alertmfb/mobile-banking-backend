@@ -22,4 +22,5 @@ export enum SuccessMessage {
   KYB_FETCHED = 'KYB status fetched successfully',
   LOGIN_SUCCESS = 'Login successful',
   USERNAME_AVAILABLE = 'Username is available',
+  ME = 'User details fetched successfully',
 }
