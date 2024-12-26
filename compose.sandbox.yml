@@ -1,32 +1,32 @@
 version: '3.8'
 
 services:
-  mobile-backend:
+  mobile-backend-sandbox:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '32777:3000' # Map the container port 3000 to your local port 3000
+      - '29403:3000'
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:postgrespassword@db:5432/alert_mobile_db
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
     volumes:
       - .:/app
-      - /app/node_modules # Prevent node_modules from being overwritten by the volume
+      - /app/node_modules
     depends_on:
       - db
 
   db:
     image: postgres:15
-    container_name: mobile-backend-db
+    container_name: mobile-backend-sandbox-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespassword
-      POSTGRES_DB: mydatabase
+      POSTGRES_DB: alert_mobile_db
     ports:
       - '0:5432'
     volumes:
-      - mobile-backend-db-data:/var/lib/postgresql/data
+      - mobile-backend-sandbox-db-data:/var/lib/postgresql/data
 
 volumes:
-  mobile-backend-db-data:
+  mobile-backend-sandbox-db-data:
