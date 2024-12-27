@@ -142,40 +142,40 @@ export class KycService {
         );
       }
 
-      const { last_name, first_name, date_of_birth } = response.entity;
-      const lastNameStatus = last_name?.status;
-      const firstNameStatus = first_name?.status;
-      const dobStatus = date_of_birth?.status;
+      // const { last_name, first_name, date_of_birth } = response.entity;
+      // const lastNameStatus = last_name?.status;
+      // const firstNameStatus = first_name?.status;
+      // const dobStatus = date_of_birth?.status;
 
       // If BVN validation is successful, approve verification
-      if (lastNameStatus && firstNameStatus && dobStatus) {
-        const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({
-          bvn,
-        });
-        if (!lookUpResponse || !lookUpResponse.entity) {
-          throw new HttpException(
-            ErrorMessages.COULD_NOT_VERIFY_BVN,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+      // if (lastNameStatus && firstNameStatus && dobStatus) {
+      //   const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({
+      //     bvn,
+      //   });
+      //   if (!lookUpResponse || !lookUpResponse.entity) {
+      //     throw new HttpException(
+      //       ErrorMessages.COULD_NOT_VERIFY_BVN,
+      //       HttpStatus.BAD_REQUEST,
+      //     );
+      //   }
 
-        console.log(lookUpResponse);
-        user.bvnLookup = encrypt(bvn);
-        user.gender = lookUpResponse.entity.gender
-          ? lookUpResponse.entity.gender.toUpperCase()
-          : 'OTHER';
+      //   console.log(lookUpResponse);
+      //   user.bvnLookup = encrypt(bvn);
+      //   user.gender = lookUpResponse.entity.gender
+      //     ? lookUpResponse.entity.gender.toUpperCase()
+      //     : 'OTHER';
 
-        const kyc = await this.kycRepository.getByUserId(userId);
-        kyc.bvnStatus = true;
+      //   const kyc = await this.kycRepository.getByUserId(userId);
+      //   kyc.bvnStatus = true;
 
-        // Update user and KYB details
-        await Promise.all([
-          this.userService.update(user.id, user),
-          this.kycRepository.updateKycByUserId(userId, kyc),
-        ]);
+      //   // Update user and KYB details
+      //   await Promise.all([
+      //     this.userService.update(user.id, user),
+      //     this.kycRepository.updateKycByUserId(userId, kyc),
+      //   ]);
 
-        return await this.kycRepository.getByUserId(userId);
-      }
+      //   return await this.kycRepository.getByUserId(userId);
+      // }
 
       // Send OTP for further BVN verification
       const lookupResponse = await this.kycProvider.bvnLookupAdvanced({ bvn });
@@ -219,7 +219,7 @@ export class KycService {
 
       const message = `OTP has been sent to your phone number ending with ${obfuscatePhoneNumber(bvnPhone)}`;
 
-      return { bvnPhone, bvnEmail, otp, message };
+      return { bvnPhone, bvnEmail, otp, message, otp_needed: true };
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
