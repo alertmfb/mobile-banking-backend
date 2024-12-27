@@ -23,7 +23,7 @@ services:
 
   db:
     image: postgres:15
-    container_name: mobile-backend-sandbox-db
+    container_name: mobile-backend-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespassword
