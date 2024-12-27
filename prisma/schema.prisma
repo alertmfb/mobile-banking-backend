@@ -21,10 +21,6 @@ enum OnboardEnum {
   EMAIL_VERIFIED
   SET_PASSCODE
   SET_PIN
-  KYB_STARTED
-  KYB_SUBMITTED
-  KYB_APPROVED
-  KYB_FAILED
   COMPLETED
 }
 
@@ -49,9 +45,22 @@ enum LoginEnum {
   LOGGED_IN
 }
 
+enum KycEnum {
+  NEW
+  STARTED
+  SUBMITTED
+  APPROVED
+  FAILED
+}
+
+enum AddressVerificationStatus {
+  PENDING
+  VERIFIED
+  FAILED
+}
 
 model User {
-  id                 String               @id @default(cuid())
+  id                 String               @id @default(uuid())
   email              String?              @unique
   username           String?              @unique
   firstName          String?
@@ -68,12 +77,15 @@ model User {
   phoneNumber        String               @unique
   onboardType        OnboardType          @default(NEW)
   onboarding         OnboardEnum          @default(NEW)
+  kycStatus          KycEnum              @default(NEW)
   login              LoginEnum            @default(INITIATED)
   loginAttempts      Int                  @default(0)
   lastLogin          DateTime?
   accounts           Account[]
   kyc                Kyc[]
   token              String?
+  bvnLookup          String?              @db.Text
+  ninLookup          String?              @db.Text
   otp                String?
   otpExpires         DateTime?
   otpId              String?
@@ -82,15 +94,15 @@ model User {
   updatedAt          DateTime             @updatedAt
   ResidentialAddress ResidentialAddress[]
 
-  @@map("users")
   @@index([phoneNumber])
   @@index([email])
   @@index([id])
+  @@map("users")
 }
 
 model Account {
   id            String              @id @default(uuid())
-  cusomterId    String?
+  customerId    String?
   trackingRef   String?
   accountNumber String              @unique
   user          User                @relation(fields: [userId], references: [id])
@@ -103,17 +115,19 @@ model Account {
 }
 
 model ResidentialAddress {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-  address   String
-  city      String
-  state     String
-  zipcode   String
-  landmark  String
-  lga       String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                        String                    @id @default(uuid())
+  user                      User                      @relation(fields: [userId], references: [id])
+  userId                    String                    @unique
+  address                   String
+  city                      String
+  state                     String
+  zipcode                   String
+  landmark                  String
+  lga                       String
+  addressVerificationStatus AddressVerificationStatus @default(PENDING)
+  addressVerificationId     String?
+  createdAt                 DateTime                  @default(now())
+  updatedAt                 DateTime                  @updatedAt
 
   @@map("residential_addresses")
 }

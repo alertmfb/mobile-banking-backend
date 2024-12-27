@@ -22,6 +22,11 @@ import { JwtPayload } from 'src/shared/interfaces/jwt-payload.interface';
 import { SetEmailDto } from './dto/set-email.dto';
 import { VerifyEmailOtpDto } from './dto/verify-email-otp.dto';
 import { SigninPasscodeDto } from './dto/signin-passcode.dto';
+import { VerifyExistingDto } from './dto/verify-existing.dto';
+import { SetExistingPasscodeDto } from './dto/set-existing-passcode.dto';
+import { ResetPasscodeDto } from './dto/reset-passcode.dto';
+import { VerifyResetPasscodeDto } from './dto/verify-reset-passcode.dto';
+import { RequestResetDto } from './dto/request-reset.dto';
 
 @ApiTags('Auth Service')
 @Controller('/auth')
@@ -78,6 +83,16 @@ export class AuthController {
     }
   }
 
+  @Post('signup/verify-existing')
+  async verifyExisting(@Body() payload: VerifyExistingDto) {
+    try {
+      const response = await this.authService.verifyExisting(payload);
+      return new SuccessResponseDto(SuccessMessage.PHONE_VERIFIED, response);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Post('signup/verify-phone')
   async verifyOtp(@Body() payload: VerifyOtpDto) {
     try {
@@ -108,6 +123,16 @@ export class AuthController {
     }
   }
 
+  @Post('signup/set-existing-passcode')
+  async setExistingPasscode(@Body() payload: SetExistingPasscodeDto) {
+    try {
+      const response = await this.authService.setExistingPasscode(payload);
+      return new SuccessResponseDto(SuccessMessage.PASSCODE_SET, response);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Post('signup/set-passcode')
   async setPasscode(@Body() payload: SetPasscodeDto) {
     try {
@@ -122,7 +147,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async setPin(@Body() payload: SetPinDto, @User() user: JwtPayload) {
     try {
-      const userId = user.sub || user.id;
+      const userId = user.id;
       const response = await this.authService.setPin(userId, payload);
       return new SuccessResponseDto(SuccessMessage.PIN_SET, response);
     } catch (e) {
@@ -134,7 +159,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async setNameDob(@Body() payload: SetNameDobDto, @User() user: JwtPayload) {
     try {
-      const userId = user.sub || user.id;
+      const userId = user.id;
+      console.log('userId', userId);
       const response = await this.authService.setNameAndDob(userId, payload);
       return new SuccessResponseDto(SuccessMessage.NAME_DOB_SET, response);
     } catch (e) {
@@ -142,32 +168,40 @@ export class AuthController {
     }
   }
 
-  @Post('signup/complete')
-  async completeSignUp() {
+  @Post('passcode/reset/request')
+  async requestResetPasscode(@Body() payload: RequestResetDto) {
     try {
-      const response = await this.authService.completeSignUp();
-      return new SuccessResponseDto(SuccessMessage.SIGNUP_COMPLETED, response);
+      const response = await this.authService.requestResetPasscode(payload);
+      return new SuccessResponseDto(
+        SuccessMessage.RESET_PASSCODE_REQUEST_SUCCESS,
+        response,
+      );
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  @Post('passcode/reset/request')
-  async requestReset(@Body() payload: VerifyOtpDto) {
+  @Post('passcode/reset/verify')
+  async verifyResetPasscode(@Body() payload: VerifyResetPasscodeDto) {
     try {
-      console.log(payload);
-      const response = await this.authService.completeSignUp();
-      return new SuccessResponseDto(SuccessMessage.SIGNUP_COMPLETED, response);
+      const response = await this.authService.verifyResetPasscode(payload);
+      return new SuccessResponseDto(
+        SuccessMessage.OTP_VERIFIED_SUCCESS,
+        response,
+      );
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   @Post('passcode/reset')
-  async reset() {
+  async resetPasscode(@Body() payload: ResetPasscodeDto) {
     try {
-      const response = await this.authService.completeSignUp();
-      return new SuccessResponseDto(SuccessMessage.SIGNUP_COMPLETED, response);
+      const response = await this.authService.resetPasscode(payload);
+      return new SuccessResponseDto(
+        SuccessMessage.PASSCODE_RESET_SUCCESS,
+        response,
+      );
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

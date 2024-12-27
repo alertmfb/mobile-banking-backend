@@ -2,19 +2,29 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDefined,
   IsNotEmpty,
-  IsPhoneNumber,
+  IsString,
   MaxLength,
   MinLength,
 } from 'class-validator';
 
-export class SetPasscodeDto {
+export class SetExistingPasscodeDto {
   @IsDefined()
   @IsNotEmpty()
-  @MaxLength(11, { message: 'Phone number must be 11 digits long' })
-  @MinLength(11, { message: 'Phone number must be 11 digits long' })
-  @ApiProperty({ required: true, example: '08012345678' })
-  @IsPhoneNumber('NG', { message: 'Invalid phone number' })
-  phoneNumber: string;
+  @IsString()
+  @ApiProperty({
+    required: true,
+    example: '1100063555',
+    description: '10-digit account number',
+  })
+  @MinLength(10)
+  @MaxLength(10)
+  accountNumber: string;
+
+  @IsDefined()
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ required: true, example: '123456' })
+  otp: string;
 
   @IsDefined()
   @IsNotEmpty()

@@ -10,9 +10,10 @@ import { AccountRepository } from './account.repository';
 import { KycService } from '../kyc/kyc.service';
 import { KycServiceProvider } from '../kyc/providers';
 import { KycRepository } from '../kyc/kyc.repository';
+import { MessagingModule } from '../messaging/messaging.module';
 
 @Module({
-  imports: [HttpModule, ConfigModule],
+  imports: [HttpModule, ConfigModule, MessagingModule],
   controllers: [AccountController],
   providers: [
     AccountService,
