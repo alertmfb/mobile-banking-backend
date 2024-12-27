@@ -475,6 +475,9 @@ export class KycService {
       if (user.onboardType == 'NEW') {
         await this.eventEmitter.emit('createAccountNumber', user);
       }
+
+      user.kycStatus = 'APPROVED';
+      await this.userService.update(user.id, user);
       return await this.kycRepository.getByUserId(userId);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
