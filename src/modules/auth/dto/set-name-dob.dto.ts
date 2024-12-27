@@ -19,6 +19,6 @@ export class SetNameDobDto {
 
   @IsDefined()
   @IsNotEmpty()
-  @ApiProperty({ required: false, example: '1990-01-01' }) // Date of birth
+  @ApiProperty({ required: false, example: '1990-01-01' })
   dob: string;
 }
