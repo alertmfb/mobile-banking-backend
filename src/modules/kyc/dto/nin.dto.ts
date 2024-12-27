@@ -6,6 +6,11 @@ export class NinDto {
   @IsDefined()
   @MinLength(11)
   @MaxLength(11)
-  @ApiProperty()
+  @ApiProperty({
+    description: 'National Identification Number',
+    example: '70123456789',
+    minLength: 11,
+    maxLength: 11,
+  })
   nin: string;
 }
