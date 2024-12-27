@@ -25,4 +25,7 @@ export enum SuccessMessage {
   ME = 'User details fetched successfully',
   USERNAME_UPDATED = 'Username updated successfully',
   BVN_DETAILS_FETCHED = 'BVN details fetched successfully',
+  RESET_PASSCODE_REQUEST_SUCCESS = 'Reset passcode request initiated successfully',
+  OTP_VERIFIED_SUCCESS = 'OTP verified successfully',
+  PASSCODE_RESET_SUCCESS = 'Passcode reset successfully',
 }

@@ -27,6 +27,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   async me(@User() user: JwtPayload) {
     try {
+      console.log('user', user);
       const resObj = await this.userService.getMe(user.id);
       return new SuccessResponseDto(SuccessMessage.ME, resObj);
     } catch (e) {

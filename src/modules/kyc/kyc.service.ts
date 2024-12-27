@@ -470,6 +470,11 @@ export class KycService {
       const kyc = await this.kycRepository.getByUserId(userId);
       kyc.attestation = true;
       await this.kycRepository.updateKycByUserId(userId, kyc);
+
+      //initiate create account number
+      if (user.onboardType == 'NEW') {
+        await this.eventEmitter.emit('createAccountNumber', user);
+      }
       return await this.kycRepository.getByUserId(userId);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);

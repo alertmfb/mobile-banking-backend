@@ -1,16 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsDefined,
-  IsNotEmpty,
-  IsString,
-  IsPhoneNumber,
-} from 'class-validator';
+import { IsDefined, IsNotEmpty, IsString } from 'class-validator';
 
 export class RequestResetDto {
   @IsDefined()
   @IsNotEmpty()
   @IsString()
-  @IsPhoneNumber('NG', { message: 'Invalid phone number' })
-  @ApiProperty({ required: true, example: '08012345678' })
-  phoneNumber: string;
+  @ApiProperty({ required: true, example: '1234567890 | example@email.com' })
+  emailOrAccountNumber: string;
 }

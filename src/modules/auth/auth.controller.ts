@@ -24,6 +24,9 @@ import { VerifyEmailOtpDto } from './dto/verify-email-otp.dto';
 import { SigninPasscodeDto } from './dto/signin-passcode.dto';
 import { VerifyExistingDto } from './dto/verify-existing.dto';
 import { SetExistingPasscodeDto } from './dto/set-existing-passcode.dto';
+import { ResetPasscodeDto } from './dto/reset-passcode.dto';
+import { VerifyResetPasscodeDto } from './dto/verify-reset-passcode.dto';
+import { RequestResetDto } from './dto/request-reset.dto';
 
 @ApiTags('Auth Service')
 @Controller('/auth')
@@ -157,6 +160,7 @@ export class AuthController {
   async setNameDob(@Body() payload: SetNameDobDto, @User() user: JwtPayload) {
     try {
       const userId = user.id;
+      console.log('userId', userId);
       const response = await this.authService.setNameAndDob(userId, payload);
       return new SuccessResponseDto(SuccessMessage.NAME_DOB_SET, response);
     } catch (e) {
@@ -165,21 +169,39 @@ export class AuthController {
   }
 
   @Post('passcode/reset/request')
-  async requestReset(@Body() payload: VerifyOtpDto) {
+  async requestResetPasscode(@Body() payload: RequestResetDto) {
     try {
-      console.log(payload);
-      const response = await this.authService.completeSignUp();
-      return new SuccessResponseDto(SuccessMessage.SIGNUP_COMPLETED, response);
+      const response = await this.authService.requestResetPasscode(payload);
+      return new SuccessResponseDto(
+        SuccessMessage.RESET_PASSCODE_REQUEST_SUCCESS,
+        response,
+      );
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('passcode/reset/verify')
+  async verifyResetPasscode(@Body() payload: VerifyResetPasscodeDto) {
+    try {
+      const response = await this.authService.verifyResetPasscode(payload);
+      return new SuccessResponseDto(
+        SuccessMessage.OTP_VERIFIED_SUCCESS,
+        response,
+      );
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   @Post('passcode/reset')
-  async reset() {
+  async resetPasscode(@Body() payload: ResetPasscodeDto) {
     try {
-      const response = await this.authService.completeSignUp();
-      return new SuccessResponseDto(SuccessMessage.SIGNUP_COMPLETED, response);
+      const response = await this.authService.resetPasscode(payload);
+      return new SuccessResponseDto(
+        SuccessMessage.PASSCODE_RESET_SUCCESS,
+        response,
+      );
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -11,7 +11,6 @@ import * as bcrypt from 'bcrypt';
 import { InitiateSignUpDto } from './dto/initiate-signup.dto';
 import { ErrorMessages } from 'src/shared/enums/error.message.enum';
 import { MessagingService } from '../messaging/messaging-service.interface';
-import { RequestResetDto } from './dto/request-reset.dto';
 import { SetPasscodeDto } from './dto/set-passcode.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { SetNameDobDto } from './dto/set-name-dob.dto';
@@ -25,6 +24,9 @@ import {
 import { AccountService } from '../account/account.service';
 import { VerifyExistingDto } from './dto/verify-existing.dto';
 import { SetExistingPasscodeDto } from './dto/set-existing-passcode.dto';
+import { VerifyResetPasscodeDto } from './dto/verify-reset-passcode.dto';
+import { ResetPasscodeDto } from './dto/reset-passcode.dto';
+import { RequestResetDto } from './dto/request-reset.dto';
 
 @Injectable()
 export class AuthService {
@@ -145,7 +147,7 @@ export class AuthService {
 
       return {
         access_token: await this.jwtService.signAsync(payload, {
-          expiresIn: '15m',
+          expiresIn: '1d',
         }),
         refresh_token: await this.jwtService.signAsync(payload, {
           expiresIn: '7d',
@@ -666,6 +668,7 @@ export class AuthService {
 
   async setNameAndDob(userId: string, payload: SetNameDobDto): Promise<any> {
     try {
+      console.log('payload', payload);
       const { firstName, lastName, otherName, dob } = payload;
       const user = await this.userService.findById(userId);
       if (!user) {
@@ -706,19 +709,148 @@ export class AuthService {
     return 'complete';
   }
 
-  async requestReset(payload: RequestResetDto): Promise<any> {
+  async requestResetPasscode(payload: RequestResetDto): Promise<any> {
     try {
-      console.log(payload);
+      const { emailOrAccountNumber } = payload;
+      let user;
+      if (emailOrAccountNumber.includes('@')) {
+        user = await this.userService.findOneByEmail(emailOrAccountNumber);
+      } else {
+        const account =
+          await this.accountService.findStoredByAccountNumber(
+            emailOrAccountNumber,
+          );
+        if (!account) {
+          throw new HttpException(
+            ErrorMessages.ACCOUNT_NOT_FOUND,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        user = await this.userService.findById(account.userId);
+      }
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      const otpExpire = new Date(new Date().getTime() + 60 * 60 * 1000);
+      const message = `Your passcode reset code is ${otp}. Valid for 1 hour`;
+
+      // call messaging servide to send OTP
+      const otpRes = await this.messagingService.sendEmailToken({
+        email_address: user.email,
+        code: otp,
+      });
+      if (!otpRes) {
+        throw new HttpException(
+          ErrorMessages.EMAIL_OTP_NOT_SENT,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      user.otp = otp.toString();
+      user.otpExpires = otpExpire;
+      user.otpId = otpRes.message_id;
+      await this.userService.update(user.id, user);
+
+      return {
+        message,
+        otp,
+      };
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async resetPasscode(payload: SetPasscodeDto): Promise<any> {
+  async verifyResetPasscode(payload: VerifyResetPasscodeDto): Promise<any> {
     try {
-      console.log(payload);
-      // return await this.userService.create();
+      const { emailOrAccountNumber, otp } = payload;
+      let user;
+      if (emailOrAccountNumber.includes('@')) {
+        user = await this.userService.findOneByEmail(emailOrAccountNumber);
+      } else {
+        const account =
+          await this.accountService.findStoredByAccountNumber(
+            emailOrAccountNumber,
+          );
+        if (!account) {
+          throw new HttpException(
+            ErrorMessages.ACCOUNT_NOT_FOUND,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        user = await this.userService.findById(account.userId);
+      }
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (user.otp !== otp || user.otpExpires < new Date()) {
+        throw new HttpException(
+          ErrorMessages.INVALID_OTP,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return;
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async resetPasscode(payload: ResetPasscodeDto): Promise<any> {
+    try {
+      const { emailOrAccountNumber, otp, passcode, confirmPasscode } = payload;
+      let user;
+      if (emailOrAccountNumber.includes('@')) {
+        user = await this.userService.findOneByEmail(emailOrAccountNumber);
+      } else {
+        const account =
+          await this.accountService.findStoredByAccountNumber(
+            emailOrAccountNumber,
+          );
+        if (!account) {
+          throw new HttpException(
+            ErrorMessages.ACCOUNT_NOT_FOUND,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        user = await this.userService.findById(account.userId);
+      }
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (user.otp !== otp || user.otpExpires < new Date()) {
+        throw new HttpException(
+          ErrorMessages.INVALID_OTP,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (passcode !== confirmPasscode) {
+        throw new HttpException(
+          ErrorMessages.PASSWORDS_DO_NOT_MATCH,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const hashedPasscode = await bcrypt.hash(passcode.toString(), 10);
+      user.passcode = hashedPasscode;
+      await this.userService.update(user.id, user);
+
+      return;
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
