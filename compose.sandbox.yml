@@ -19,7 +19,7 @@ services:
       - .:/app
       - /app/node_modules
     depends_on:
-      - db
+      - mobile-backend-db
 
   mobile-backend-db:
     image: postgres:15
