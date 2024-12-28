@@ -648,14 +648,14 @@ export class AuthService {
         );
       }
 
-      const validOnboardingStatus = ['COMPLETE', 'SET_PIN', 'SET_PASSCODE'];
+      // const validOnboardingStatus = ['COMPLETE', 'SET_PIN', 'SET_PASSCODE'];
 
-      if (!validOnboardingStatus.includes(user.onboarding)) {
-        throw new HttpException(
-          ErrorMessages.PIN_NOT_SET,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      // if (!validOnboardingStatus.includes(user.onboarding)) {
+      //   throw new HttpException(
+      //     ErrorMessages.PIN_NOT_SET,
+      //     HttpStatus.BAD_REQUEST,
+      //   );
+      // }
 
       const hashedPin = await bcrypt.hash(pin.toString(), 10);
       user.pin = hashedPin;
