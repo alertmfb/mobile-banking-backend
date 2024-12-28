@@ -35,3 +35,5 @@ services:
 
 volumes:
   mobile-backend-sandbox-db-data:
+
+# confirm db is up
