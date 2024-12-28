@@ -33,4 +33,5 @@ export enum ErrorMessages {
   PHONE_IN_USE = 'Phone number in use',
   BVN_MISMATCH = 'BVN mismatch',
   PHONE_NUMBER_NOT_FOUND = 'Phone number not found',
+  PIN_NOT_SET = 'Failed to set pin',
 }

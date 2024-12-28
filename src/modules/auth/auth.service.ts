@@ -648,18 +648,19 @@ export class AuthService {
         );
       }
 
-      if (user.onboarding == 'SET_PASSCODE' || user.onboarding == 'SET_PIN') {
-        const hashedPin = await bcrypt.hash(pin.toString(), 10);
-        user.pin = hashedPin;
-        user.onboarding = 'SET_PIN';
-        await this.userService.update(user.id, user);
-        return;
+      const validOnboardingStatus = ['COMPLETE', 'SET_PIN', 'SET_PASS_CODE'];
+
+      if (!validOnboardingStatus.includes(user.onboarding)) {
+        throw new HttpException(
+          ErrorMessages.PIN_NOT_SET,
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
-      throw new HttpException(
-        ErrorMessages.PASSCODE_NOT_SET,
-        HttpStatus.BAD_REQUEST,
-      );
+      const hashedPin = await bcrypt.hash(pin.toString(), 10);
+      user.pin = hashedPin;
+      await this.userService.update(user.id, user);
+      return;
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
