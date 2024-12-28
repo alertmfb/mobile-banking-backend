@@ -40,7 +40,7 @@ export class KycService {
     private readonly kycRepository: KycRepository,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-    private readonly eventEmitter: aEventEmitter2,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.logger = new Logger(KycService.name);
     this.enviroment = this.configService.get<string>('APP_ENV');
