@@ -40,7 +40,7 @@ export class KycService {
     private readonly kycRepository: KycRepository,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventEmitter: aEventEmitter2,
   ) {
     this.logger = new Logger(KycService.name);
     this.enviroment = this.configService.get<string>('APP_ENV');
@@ -142,10 +142,10 @@ export class KycService {
         );
       }
 
-      // const { last_name, first_name, date_of_birth } = response.entity;
-      // const lastNameStatus = last_name?.status;
-      // const firstNameStatus = first_name?.status;
-      // const dobStatus = date_of_birth?.status;
+      const { last_name, first_name, date_of_birth } = response.entity;
+      const lastNameStatus = last_name?.status;
+      const firstNameStatus = first_name?.status;
+      const dobStatus = date_of_birth?.status;
 
       // If BVN validation is successful, approve verification
       // if (lastNameStatus && firstNameStatus && dobStatus) {
@@ -166,13 +166,19 @@ export class KycService {
       //     : 'OTHER';
 
       //   const kyc = await this.kycRepository.getByUserId(userId);
-      //   kyc.bvnStatus = true;
-
-      //   // Update user and KYB details
-      //   await Promise.all([
-      //     this.userService.update(user.id, user),
-      //     this.kycRepository.updateKycByUserId(userId, kyc),
-      //   ]);
+      //   if (!kyc) {
+      //     await this.kycRepository.createKyc({
+      //       user: { connect: { id: user.id } },
+      //       bvnStatus: true,
+      //     });
+      //   } else {
+      //     kyc.bvnStatus = true;
+      //     // Update user and KYB details
+      //     await Promise.all([
+      //       this.userService.update(user.id, user),
+      //       this.kycRepository.updateKycByUserId(userId, kyc),
+      //     ]);
+      //   }
 
       //   return await this.kycRepository.getByUserId(userId);
       // }
@@ -250,14 +256,21 @@ export class KycService {
       }
 
       // Change BVN status to true
-      const kyc = await this.kycRepository.getByUserId(userId);
-      kyc.bvnStatus = true;
 
-      // Perform updates in parallel for efficiency
-      const updatedKyc = await this.kycRepository.updateKycByUserId(
-        userId,
-        kyc,
-      );
+      const kyc = await this.kycRepository.getByUserId(userId);
+
+      if (!kyc) {
+        await this.kycRepository.createKyc({
+          user: { connect: { id: user.id } },
+          bvnStatus: true,
+        });
+      } else {
+        kyc.bvnStatus = true;
+
+        // Perform updates in parallel for efficiency
+        await this.kycRepository.updateKycByUserId(userId, kyc);
+      }
+
       const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({ bvn });
       if (!lookUpResponse || !lookUpResponse.entity) {
         throw new HttpException(
@@ -277,7 +290,7 @@ export class KycService {
       // Update the user after verification
       await this.userService.update(user.id, user);
 
-      return updatedKyc;
+      return await this.kycRepository.getByUserId(userId);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -333,8 +346,16 @@ export class KycService {
 
       if (ninIsValid(response.entity, user)) {
         const kyc = await this.kycRepository.getByUserId(userId);
-        kyc.ninStatus = true;
-        await this.kycRepository.updateKycByUserId(userId, kyc);
+        if (!kyc) {
+          await this.kycRepository.createKyc({
+            user: { connect: { id: user.id } },
+            ninStatus: true,
+          });
+        } else {
+          kyc.ninStatus = true;
+          await this.kycRepository.updateKycByUserId(userId, kyc);
+        }
+
         return await this.kycRepository.getByUserId(userId);
       }
 
@@ -440,8 +461,15 @@ export class KycService {
 
       if (status == 'success') {
         const kyc = await this.kycRepository.getByUserId(userId);
-        kyc.residentialAddressStatus = true;
-        await this.kycRepository.updateKycByUserId(userId, kyc);
+        if (!kyc) {
+          await this.kycRepository.createKyc({
+            user: { connect: { id: user.id } },
+            residentialAddressStatus: true,
+          });
+        } else {
+          kyc.residentialAddressStatus = true;
+          await this.kycRepository.updateKycByUserId(userId, kyc);
+        }
         return await this.kycRepository.getByUserId(userId);
       }
 
@@ -468,6 +496,12 @@ export class KycService {
         );
       }
       const kyc = await this.kycRepository.getByUserId(userId);
+      if (!kyc) {
+        throw new HttpException(
+          ErrorMessages.KYC_NOT_INITIATED,
+          HttpStatus.NOT_FOUND,
+        );
+      }
       kyc.attestation = true;
       await this.kycRepository.updateKycByUserId(userId, kyc);
 

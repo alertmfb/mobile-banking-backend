@@ -34,4 +34,5 @@ export enum ErrorMessages {
   BVN_MISMATCH = 'BVN mismatch',
   PHONE_NUMBER_NOT_FOUND = 'Phone number not found',
   PIN_NOT_SET = 'Failed to set pin',
+  KYC_NOT_INITIATED = 'You have not started your KYC process',
 }
