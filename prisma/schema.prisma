@@ -98,6 +98,7 @@ model User {
   @@index([email])
   @@index([id])
   @@map("users")
+  SecurityQuestion SecurityQuestion[]
 }
 
 model Account {
@@ -146,4 +147,17 @@ model Kyc {
   updatedAt                DateTime @updatedAt
 
   @@map("kycs")
+}
+
+model SecurityQuestion {
+  id        String   @id @default(uuid())
+  number    Int
+  question  String
+  answer    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("security_questions")
 }

@@ -6,6 +6,7 @@ import { HttpService } from '@nestjs/axios';
 import { AccountRepository } from './account.repository';
 import { Prisma } from '@prisma/client';
 import { KycService } from '../kyc/kyc.service';
+import { ErrorMessages } from 'src/shared/enums/error.message.enum';
 
 @Injectable()
 export class AccountService {
@@ -48,7 +49,10 @@ export class AccountService {
     try {
       const user = await this.userService.findOne(userId);
       if (!user) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       const residentialAdress =
@@ -117,7 +121,10 @@ export class AccountService {
   async createCustomerAndAccount(userId: string) {
     const user = await this.userService.findOne(userId);
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ErrorMessages.USER_NOT_FOUND,
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 

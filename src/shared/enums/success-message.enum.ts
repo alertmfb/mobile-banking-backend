@@ -28,4 +28,6 @@ export enum SuccessMessage {
   RESET_PASSCODE_REQUEST_SUCCESS = 'Reset passcode request initiated successfully',
   OTP_VERIFIED_SUCCESS = 'OTP verified successfully',
   PASSCODE_RESET_SUCCESS = 'Passcode reset successfully',
+  QUESTION_CREATED = 'Security question created successfully',
+  QUESTION_RETRIEVED = 'Security questions retrieved successfully',
 }

@@ -13,6 +13,7 @@ import { AccountModule } from './modules/account/account.module';
 import { EventsModule } from './modules/events/events.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './modules/user/user.module';
+import { SecurityModule } from './modules/security/security.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { UserModule } from './modules/user/user.module';
     StorageModule,
     AccountModule,
     EventsModule,
+    SecurityModule,
   ],
   controllers: [AppController],
   providers: [

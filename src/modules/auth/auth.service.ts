@@ -97,7 +97,7 @@ export class AuthService {
       const user = await this.userService.finByPhoneOrEmail(emailorPhone);
 
       if (!user) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        throw new HttpException(ErrorMessages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
       }
 
       if (user.login !== 'PHONE_VERIFIED') {
