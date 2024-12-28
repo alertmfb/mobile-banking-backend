@@ -3,4 +3,4 @@ export class SignInWithPassword {
   password: string;
 }
 
-// comment for testing deployment bug
+// bug identified
