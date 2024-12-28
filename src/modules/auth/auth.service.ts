@@ -648,7 +648,7 @@ export class AuthService {
         );
       }
 
-      const validOnboardingStatus = ['COMPLETE', 'SET_PIN', 'SET_PASS_CODE'];
+      const validOnboardingStatus = ['COMPLETE', 'SET_PIN', 'SET_PASSCODE'];
 
       if (!validOnboardingStatus.includes(user.onboarding)) {
         throw new HttpException(
