@@ -27,6 +27,9 @@ import { SetExistingPasscodeDto } from './dto/set-existing-passcode.dto';
 import { VerifyResetPasscodeDto } from './dto/verify-reset-passcode.dto';
 import { ResetPasscodeDto } from './dto/reset-passcode.dto';
 import { RequestResetDto } from './dto/request-reset.dto';
+import { AccountCreateEvent } from '../account/events/account-create.event';
+import { Events } from 'src/shared/enums/events.enum';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AuthService {
@@ -38,6 +41,7 @@ export class AuthService {
     private readonly userService: UserService,
     private jwtService: JwtService,
     private readonly accountService: AccountService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async signInInitiate(payload: any): Promise<any> {
@@ -97,7 +101,10 @@ export class AuthService {
       const user = await this.userService.finByPhoneOrEmail(emailorPhone);
 
       if (!user) {
-        throw new HttpException(ErrorMessages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       if (user.login !== 'PHONE_VERIFIED') {
@@ -656,6 +663,14 @@ export class AuthService {
       //     HttpStatus.BAD_REQUEST,
       //   );
       // }
+
+      //initiate create account number
+      if (user.onboardType == 'NEW') {
+        console.log('emitting event');
+        const createAccount = new AccountCreateEvent();
+        createAccount.userId = userId;
+        this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, createAccount);
+      }
 
       const hashedPin = await bcrypt.hash(pin.toString(), 10);
       user.pin = hashedPin;

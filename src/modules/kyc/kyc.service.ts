@@ -180,6 +180,17 @@ export class KycService {
           ]);
         }
 
+        //initiate create account number
+        if (user.onboardType == 'NEW') {
+          console.log('emitting event');
+          const createAccount = new AccountCreateEvent();
+          createAccount.userId = userId;
+          this.eventEmitter.emit(
+            Events.ON_CREATE_ACCOUNT_NUMBER,
+            createAccount,
+          );
+        }
+
         return await this.kycRepository.getByUserId(userId);
       }
 
@@ -224,6 +235,14 @@ export class KycService {
       await this.userService.update(user.id, user);
 
       const message = `OTP has been sent to your phone number ending with ${obfuscatePhoneNumber(bvnPhone)}`;
+
+      //initiate create account number
+      if (user.onboardType == 'NEW') {
+        console.log('emitting event');
+        const createAccount = new AccountCreateEvent();
+        createAccount.userId = userId;
+        this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, createAccount);
+      }
 
       return { bvnPhone, bvnEmail, otp, message, otp_needed: true };
     } catch (e) {
@@ -289,6 +308,14 @@ export class KycService {
       user.gender = gender.toUpperCase();
       // Update the user after verification
       await this.userService.update(user.id, user);
+
+      //initiate create account number
+      if (user.onboardType == 'NEW') {
+        console.log('emitting event');
+        const createAccount = new AccountCreateEvent();
+        createAccount.userId = userId;
+        this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, createAccount);
+      }
 
       return await this.kycRepository.getByUserId(userId);
     } catch (e) {
@@ -396,6 +423,7 @@ export class KycService {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async residentialAddress(userId: string, payload: ResidentialAddressDto) {
     try {
       const user = await this.userService.findById(userId);
@@ -473,6 +501,14 @@ export class KycService {
         return await this.kycRepository.getByUserId(userId);
       }
 
+      //initiate create account number
+      if (user.onboardType == 'NEW') {
+        console.log('emitting event');
+        const createAccount = new AccountCreateEvent();
+        createAccount.userId = userId;
+        this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, createAccount);
+      }
+
       return await this.kycRepository.getResidentialAddress(userId);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -510,7 +546,7 @@ export class KycService {
         console.log('emitting event');
         const createAccount = new AccountCreateEvent();
         createAccount.userId = userId;
-        this.eventEmitter.emit(Events.ON_CREATE_ACCOUN_NUMBER, createAccount);
+        this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, createAccount);
       }
 
       user.kycStatus = 'APPROVED';

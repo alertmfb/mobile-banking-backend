@@ -11,14 +11,14 @@ export class AccountCreateListener {
     this.logger = new Logger(AccountCreateListener.name);
   }
 
-  @OnEvent(Events.ON_CREATE_ACCOUN_NUMBER, { async: true })
+  @OnEvent(Events.ON_CREATE_ACCOUNT_NUMBER, { async: true })
   async handleOrderCreatedEvent(payload: AccountCreateEvent) {
     try {
-      this.logger.log(`Received event ${Events.ON_CREATE_ACCOUN_NUMBER}`);
+      this.logger.log(`Received event ${Events.ON_CREATE_ACCOUNT_NUMBER}`);
       await this.accountService.createAccount(payload.userId);
     } catch (error) {
       this.logger.error(
-        `Error in event ${Events.ON_CREATE_ACCOUN_NUMBER}: ${error.message}`,
+        `Error in event ${Events.ON_CREATE_ACCOUNT_NUMBER}: ${error.message}`,
         error,
       );
     }

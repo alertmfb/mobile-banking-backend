@@ -8,6 +8,7 @@ import { Prisma } from '@prisma/client';
 import { KycService } from '../kyc/kyc.service';
 import { ErrorMessages } from 'src/shared/enums/error.message.enum';
 import { decrypt } from 'src/utils/helpers';
+import { randomInt } from 'node:crypto';
 
 @Injectable()
 export class AccountService {
@@ -48,7 +49,6 @@ export class AccountService {
 
   async createAccount(userId: string) {
     try {
-      console.log('Creating account');
       const user = await this.userService.findOne(userId);
       if (!user) {
         throw new HttpException(
@@ -57,6 +57,37 @@ export class AccountService {
         );
       }
 
+      const account = await this.accountRepository.getAccountByUserId(user.id);
+      if (account) {
+        throw new HttpException(
+          ErrorMessages.ACCOUNT_ALREADY_EXISTS,
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      const kyc = await this.kycService.getKyc(userId);
+
+      if (!kyc) {
+        throw new HttpException('User has not done KYC', HttpStatus.NOT_FOUND);
+      }
+
+      // check if user has done bvn and nin verification
+      if (!kyc.bvnStatus || !kyc.ninStatus) {
+        throw new HttpException(
+          'User has not done BVN or NIN verification',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // check if user has added nationality
+      if (!kyc.nationalityStatus) {
+        throw new HttpException(
+          `User has not added nationality`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // check if user has added residential address
       const residentialAdress =
         await this.kycService.getResidentialAddress(userId);
 
@@ -67,6 +98,8 @@ export class AccountService {
         );
       }
 
+      console.log('bvn lookup', user.bvnLookup);
+
       if (!user.bvnLookup) {
         throw new HttpException('User BVN not found', HttpStatus.NOT_FOUND);
       }
@@ -76,7 +109,8 @@ export class AccountService {
         BVN:
           this.enviroment == 'production'
             ? decrypt(user.bvnLookup)
-            : '22222222222',
+            : randomInt(10000000000, 99999999999).toString(),
+
         FirstName: user.firstName,
         LastName: user.lastName,
         OtherNames: user.otherName,
@@ -88,7 +122,6 @@ export class AccountService {
       };
 
       // console.log('Creating account...', data);
-
       const response = await lastValueFrom(
         this.httpService.post(
           `${this.coreBankingUrl}/accounts/create-account`,
