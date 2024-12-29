@@ -59,9 +59,10 @@ export class AuthService {
       const otp = Math.floor(100000 + Math.random() * 900000); // call termii API to send OTP
       user.otp = otp.toString();
       user.otpExpires = new Date(new Date().getTime() + 60 * 60 * 1000);
-      user.login = 'INITIATED';
+      user.login = 'PHONE_VERIFIED';
       await this.userService.update(user.id, user);
-      return { phoneNumber, otp, message: ' Valid for 1 hour' };
+      // return { phoneNumber, otp, message: ' Valid for 1 hour' };
+      return;
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
