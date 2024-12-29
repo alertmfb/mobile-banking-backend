@@ -27,6 +27,8 @@ import {
 import { MessagingService } from '../messaging/messaging-service.interface';
 import { ConfigService } from '@nestjs/config';
 import { VerifyBvnOtpDto } from './dto/verify-bvn-otp.dto';
+import { Events } from 'src/shared/enums/events.enum';
+import { AccountCreateEvent } from '../account/events/account-create.event';
 
 @Injectable()
 export class KycService {
@@ -133,8 +135,6 @@ export class KycService {
         dob: user.dob,
       });
 
-      console.log(response);
-
       if (!response?.entity) {
         throw new HttpException(
           ErrorMessages.COULD_NOT_VERIFY_BVN,
@@ -148,40 +148,40 @@ export class KycService {
       const dobStatus = date_of_birth?.status;
 
       // If BVN validation is successful, approve verification
-      // if (lastNameStatus && firstNameStatus && dobStatus) {
-      //   const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({
-      //     bvn,
-      //   });
-      //   if (!lookUpResponse || !lookUpResponse.entity) {
-      //     throw new HttpException(
-      //       ErrorMessages.COULD_NOT_VERIFY_BVN,
-      //       HttpStatus.BAD_REQUEST,
-      //     );
-      //   }
+      if (lastNameStatus && firstNameStatus && dobStatus) {
+        const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({
+          bvn,
+        });
+        if (!lookUpResponse || !lookUpResponse.entity) {
+          throw new HttpException(
+            ErrorMessages.COULD_NOT_VERIFY_BVN,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
 
-      //   console.log(lookUpResponse);
-      //   user.bvnLookup = encrypt(bvn);
-      //   user.gender = lookUpResponse.entity.gender
-      //     ? lookUpResponse.entity.gender.toUpperCase()
-      //     : 'OTHER';
+        // console.log(lookUpResponse);
+        user.bvnLookup = encrypt(bvn);
+        user.gender = lookUpResponse.entity.gender
+          ? lookUpResponse.entity.gender.toUpperCase()
+          : 'OTHER';
 
-      //   const kyc = await this.kycRepository.getByUserId(userId);
-      //   if (!kyc) {
-      //     await this.kycRepository.createKyc({
-      //       user: { connect: { id: user.id } },
-      //       bvnStatus: true,
-      //     });
-      //   } else {
-      //     kyc.bvnStatus = true;
-      //     // Update user and KYB details
-      //     await Promise.all([
-      //       this.userService.update(user.id, user),
-      //       this.kycRepository.updateKycByUserId(userId, kyc),
-      //     ]);
-      //   }
+        const kyc = await this.kycRepository.getByUserId(userId);
+        if (!kyc) {
+          await this.kycRepository.createKyc({
+            user: { connect: { id: user.id } },
+            bvnStatus: true,
+          });
+        } else {
+          kyc.bvnStatus = true;
+          // Update user and KYB details
+          await Promise.all([
+            this.userService.update(user.id, user),
+            this.kycRepository.updateKycByUserId(userId, kyc),
+          ]);
+        }
 
-      //   return await this.kycRepository.getByUserId(userId);
-      // }
+        return await this.kycRepository.getByUserId(userId);
+      }
 
       // Send OTP for further BVN verification
       const lookupResponse = await this.kycProvider.bvnLookupAdvanced({ bvn });
@@ -507,7 +507,10 @@ export class KycService {
 
       //initiate create account number
       if (user.onboardType == 'NEW') {
-        await this.eventEmitter.emit('createAccountNumber', user);
+        console.log('emitting event');
+        const createAccount = new AccountCreateEvent();
+        createAccount.userId = userId;
+        this.eventEmitter.emit(Events.ON_CREATE_ACCOUN_NUMBER, createAccount);
       }
 
       user.kycStatus = 'APPROVED';

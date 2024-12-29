@@ -11,6 +11,7 @@ import { KycService } from '../kyc/kyc.service';
 import { KycServiceProvider } from '../kyc/providers';
 import { KycRepository } from '../kyc/kyc.repository';
 import { MessagingModule } from '../messaging/messaging.module';
+import { AccountCreateListener } from './listeners/account-create.listener';
 
 @Module({
   imports: [HttpModule, ConfigModule, MessagingModule],
@@ -24,6 +25,7 @@ import { MessagingModule } from '../messaging/messaging.module';
     KycServiceProvider,
     KycRepository,
     UserRepository,
+    AccountCreateListener,
   ],
 })
 export class AccountModule {}

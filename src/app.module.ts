@@ -21,11 +21,7 @@ import { SecurityModule } from './modules/security/security.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    EventEmitterModule.forRoot({
-      maxListeners: 10,
-      verboseMemoryLeak: false,
-      ignoreErrors: false,
-    }),
+    EventEmitterModule.forRoot(),
     UserModule,
     PrismaModule,
     KycModule,

@@ -7,6 +7,7 @@ import { AccountRepository } from './account.repository';
 import { Prisma } from '@prisma/client';
 import { KycService } from '../kyc/kyc.service';
 import { ErrorMessages } from 'src/shared/enums/error.message.enum';
+import { decrypt } from 'src/utils/helpers';
 
 @Injectable()
 export class AccountService {
@@ -25,8 +26,8 @@ export class AccountService {
     this.enviroment = this.configService.get<string>('APP_ENV');
     this.coreBankingUrl =
       this.enviroment == 'production'
-        ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1'
-        : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1';
+        ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/core'
+        : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/core';
     this.coreBankingAuthKey =
       this.enviroment == 'production'
         ? this.configService.get<string>('CORE_BANKING_SANDOX_KEY')
@@ -47,6 +48,7 @@ export class AccountService {
 
   async createAccount(userId: string) {
     try {
+      console.log('Creating account');
       const user = await this.userService.findOne(userId);
       if (!user) {
         throw new HttpException(
@@ -65,33 +67,36 @@ export class AccountService {
         );
       }
 
+      if (!user.bvnLookup) {
+        throw new HttpException('User BVN not found', HttpStatus.NOT_FOUND);
+      }
+
       const data = {
-        TransactionTrackingRef: user.id,
-        AccountOpeningTrackingRef: 'TestQuick4',
-        ProductCode: '101',
-        CustomerID: '',
-        LastName: user.lastName,
-        OtherNames: `${user.firstName} ${user.otherName}`,
-        BVN: user.id,
-        PhoneNo: user.reference,
         Gender: user.gender == 'MALE' ? '0' : '1',
+        BVN:
+          this.enviroment == 'production'
+            ? decrypt(user.bvnLookup)
+            : '22222222222',
+        FirstName: user.firstName,
+        LastName: user.lastName,
+        OtherNames: user.otherName,
         PlaceOfBirth: user.pob,
         DateOfBirth: user.dob,
+        PhoneNo: user.phoneNumber,
         Address: `${residentialAdress.address}, ${residentialAdress.city}, ${residentialAdress.state}`,
-        AccountOfficerCode: '101',
         Email: user.email,
-        NotificationPreference: 0,
-        TransactionPermission: '0',
-        AccountTier: '1',
       };
 
+      // console.log('Creating account...', data);
+
       const response = await lastValueFrom(
-        this.httpService.post(`${this.coreBankingUrl}/create-bank`, data, {
-          headers: {
-            Authorization: this.coreBankingAuthKey,
-          },
-        }),
+        this.httpService.post(
+          `${this.coreBankingUrl}/accounts/create-account`,
+          data,
+        ),
       );
+
+      console.log('Response', response.data);
 
       if (!response || !response.data || !response.data.IsSuccessful) {
         throw new HttpException(
@@ -112,6 +117,8 @@ export class AccountService {
       });
 
       // create account number
+      console.log('Account created');
+      return;
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.NOT_FOUND);
@@ -139,5 +146,28 @@ export class AccountService {
       ),
     );
     return response.data;
+  }
+
+  async getUserAccount(userId: string) {
+    try {
+      const user = await this.userService.findOne(userId);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const account = await this.accountRepository.getAccountByUserId(user.id);
+      if (!account) {
+        throw new HttpException(
+          ErrorMessages.ACCOUNT_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      return account;
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
   }
 }

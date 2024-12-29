@@ -669,7 +669,6 @@ export class AuthService {
 
   async setNameAndDob(userId: string, payload: SetNameDobDto): Promise<any> {
     try {
-      console.log('payload', payload);
       const { firstName, lastName, otherName, dob } = payload;
       const user = await this.userService.findById(userId);
       if (!user) {

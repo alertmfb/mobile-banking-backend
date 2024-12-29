@@ -30,4 +30,5 @@ export enum SuccessMessage {
   PASSCODE_RESET_SUCCESS = 'Passcode reset successfully',
   QUESTION_CREATED = 'Security question created successfully',
   QUESTION_RETRIEVED = 'Security questions retrieved successfully',
+  ACCOUNT_DETAILS_RETRIVED = 'Account details retrieved successfully',
 }
