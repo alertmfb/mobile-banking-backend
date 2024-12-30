@@ -27,8 +27,7 @@ import {
 import { MessagingService } from '../messaging/messaging-service.interface';
 import { ConfigService } from '@nestjs/config';
 import { VerifyBvnOtpDto } from './dto/verify-bvn-otp.dto';
-import { Events } from 'src/shared/enums/events.enum';
-import { AccountCreateEvent } from '../account/events/account-create.event';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class KycService {
@@ -179,18 +178,6 @@ export class KycService {
             this.kycRepository.updateKycByUserId(userId, kyc),
           ]);
         }
-
-        //initiate create account number
-        if (user.onboardType == 'NEW') {
-          console.log('emitting event');
-          const createAccount = new AccountCreateEvent();
-          createAccount.userId = userId;
-          this.eventEmitter.emit(
-            Events.ON_CREATE_ACCOUNT_NUMBER,
-            createAccount,
-          );
-        }
-
         return await this.kycRepository.getByUserId(userId);
       }
 
@@ -235,14 +222,6 @@ export class KycService {
       await this.userService.update(user.id, user);
 
       const message = `OTP has been sent to your phone number ending with ${obfuscatePhoneNumber(bvnPhone)}`;
-
-      //initiate create account number
-      if (user.onboardType == 'NEW') {
-        console.log('emitting event');
-        const createAccount = new AccountCreateEvent();
-        createAccount.userId = userId;
-        this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, createAccount);
-      }
 
       return { bvnPhone, bvnEmail, otp, message, otp_needed: true };
     } catch (e) {
@@ -308,14 +287,6 @@ export class KycService {
       user.gender = gender.toUpperCase();
       // Update the user after verification
       await this.userService.update(user.id, user);
-
-      //initiate create account number
-      if (user.onboardType == 'NEW') {
-        console.log('emitting event');
-        const createAccount = new AccountCreateEvent();
-        createAccount.userId = userId;
-        this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, createAccount);
-      }
 
       return await this.kycRepository.getByUserId(userId);
     } catch (e) {
@@ -501,14 +472,6 @@ export class KycService {
         return await this.kycRepository.getByUserId(userId);
       }
 
-      //initiate create account number
-      if (user.onboardType == 'NEW') {
-        console.log('emitting event');
-        const createAccount = new AccountCreateEvent();
-        createAccount.userId = userId;
-        this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, createAccount);
-      }
-
       return await this.kycRepository.getResidentialAddress(userId);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -541,14 +504,6 @@ export class KycService {
       kyc.attestation = true;
       await this.kycRepository.updateKycByUserId(userId, kyc);
 
-      //initiate create account number
-      if (user.onboardType == 'NEW') {
-        console.log('emitting event');
-        const createAccount = new AccountCreateEvent();
-        createAccount.userId = userId;
-        this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, createAccount);
-      }
-
       user.kycStatus = 'APPROVED';
       await this.userService.update(user.id, user);
       return await this.kycRepository.getByUserId(userId);
@@ -563,5 +518,13 @@ export class KycService {
 
   async getKyc(userId: string) {
     return await this.kycRepository.getByUserId(userId);
+  }
+
+  async getManyKycWhereQuery(query: Prisma.KycWhereInput, take: number) {
+    return await this.kycRepository.getManyKycWhereQuery(query, take);
+  }
+
+  async updateKyc(userId: string, data: Prisma.KycUpdateInput) {
+    return await this.kycRepository.updateKycByUserId(userId, data);
   }
 }

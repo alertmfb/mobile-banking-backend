@@ -27,5 +27,6 @@ import { AccountCreateListener } from './listeners/account-create.listener';
     UserRepository,
     AccountCreateListener,
   ],
+  exports: [AccountService],
 })
 export class AccountModule {}

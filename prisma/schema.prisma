@@ -143,6 +143,7 @@ model Kyc {
   bvnStatus                Boolean  @default(false)
   residentialAddressStatus Boolean  @default(false)
   attestation              Boolean  @default(false)
+  accountIssued            Boolean  @default(false)
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
 

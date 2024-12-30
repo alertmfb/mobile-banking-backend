@@ -32,7 +32,6 @@ import { UserModule } from '../user/user.module';
     PrismaService,
     AuthService,
     JwtStrategy,
-    AccountService,
     AccountRepository,
     KycService,
     KycServiceProvider,

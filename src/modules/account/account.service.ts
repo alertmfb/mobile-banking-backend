@@ -9,6 +9,7 @@ import { KycService } from '../kyc/kyc.service';
 import { ErrorMessages } from 'src/shared/enums/error.message.enum';
 import { decrypt } from 'src/utils/helpers';
 import { randomInt } from 'node:crypto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AccountService {
@@ -17,6 +18,7 @@ export class AccountService {
   private readonly enviroment;
   private readonly headers;
   private readonly logger;
+  private accountCreationRunning;
   constructor(
     private readonly accountRepository: AccountRepository,
     private readonly userService: UserService,
@@ -37,6 +39,8 @@ export class AccountService {
       Authorization: this.coreBankingAuthKey,
     };
     this.logger = new Logger(AccountService.name);
+    this.accountCreationRunning = false;
+    console.log('AccountService initialized');
   }
 
   async storeAccount(account: Prisma.AccountCreateInput) {
@@ -72,7 +76,7 @@ export class AccountService {
       }
 
       // check if user has done bvn and nin verification
-      if (!kyc.bvnStatus || !kyc.ninStatus) {
+      if (!kyc.bvnStatus && !kyc.ninStatus) {
         throw new HttpException(
           'User has not done BVN or NIN verification',
           HttpStatus.NOT_FOUND,
@@ -97,8 +101,6 @@ export class AccountService {
           HttpStatus.NOT_FOUND,
         );
       }
-
-      console.log('bvn lookup', user.bvnLookup);
 
       if (!user.bvnLookup) {
         throw new HttpException('User BVN not found', HttpStatus.NOT_FOUND);
@@ -137,7 +139,7 @@ export class AccountService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-
+      console.log('creating...');
       await this.accountRepository.create({
         user: {
           connect: {
@@ -147,6 +149,11 @@ export class AccountService {
         accountNumber: response.data.Message.AccountNumber,
         customerId: response.data.Message.CustomerID,
         provider: 'BANKONE',
+      });
+
+      //update kyc
+      await this.kycService.updateKyc(user.id, {
+        accountIssued: true,
       });
 
       // create account number
@@ -201,6 +208,32 @@ export class AccountService {
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_SECONDS)
+  async handleCreateAccount() {
+    // this.logger.log(`Cron job started at ${new Date().toISOString()}`);
+    if (this.accountCreationRunning) {
+      this.logger.warn('Previous job still running. Skipping this execution.');
+      return;
+    }
+    this.accountCreationRunning = true;
+    try {
+      const kycs = await this.kycService.getManyKycWhereQuery(
+        {
+          bvnStatus: true,
+          accountIssued: false,
+        },
+        5,
+      );
+      for (const kyc of kycs) {
+        await this.createAccount(kyc.userId);
+      }
+    } catch (e) {
+      this.logger.error(e.message);
+    } finally {
+      this.accountCreationRunning = false;
     }
   }
 }

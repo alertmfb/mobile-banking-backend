@@ -43,4 +43,8 @@ export class KycRepository {
       where: { userId },
     });
   }
+
+  async getManyKycWhereQuery(query: Prisma.KycWhereInput, take: number = 5) {
+    return this.prismaService.kyc.findMany({ where: query, take });
+  }
 }

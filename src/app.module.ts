@@ -14,6 +14,7 @@ import { EventsModule } from './modules/events/events.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './modules/user/user.module';
 import { SecurityModule } from './modules/security/security.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SecurityModule } from './modules/security/security.module';
       isGlobal: true,
     }),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     UserModule,
     PrismaModule,
     KycModule,
