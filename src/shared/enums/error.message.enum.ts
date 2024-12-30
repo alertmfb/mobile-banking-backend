@@ -36,4 +36,6 @@ export enum ErrorMessages {
   PIN_NOT_SET = 'Failed to set pin',
   KYC_NOT_INITIATED = 'You have not started your KYC process',
   ACCOUNT_ALREADY_EXISTS = 'Account already exists',
+  BVN_IS_A_MUST_BEFORE_FACE = 'You must verify BVN before verifying your face',
+  FACE_DOES_NOT_MATCH = 'We could not verify your face: Face does not match. Try again',
 }

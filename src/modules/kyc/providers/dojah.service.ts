@@ -193,27 +193,39 @@ export class DojahService implements KycProvider {
 
   async bvnFaceMatch(payload: BvnFaceVerifyDto): Promise<any> {
     const response = await lastValueFrom(
-      this.httpService.post(`${this.baseUrl}/identity/nin/selfie`, payload, {
-        headers: this.header,
-      }),
+      this.httpService.post(
+        `${this.baseUrl}/verification/identity/bvn/selfie`,
+        payload,
+        {
+          headers: this.header,
+        },
+      ),
     );
     return response.data;
   }
 
   async ninFaceMatch(payload: NinVerifyDto): Promise<any> {
     const response = await lastValueFrom(
-      this.httpService.post(`${this.baseUrl}/identity/nin/selfie`, payload, {
-        headers: this.header,
-      }),
+      this.httpService.post(
+        `${this.baseUrl}/verification/identity/nin/selfie`,
+        payload,
+        {
+          headers: this.header,
+        },
+      ),
     );
     return response.data;
   }
 
-  async lineliness(payload: LinelinessDto): Promise<any> {
+  async liveness(payload: LinelinessDto): Promise<any> {
     const response = await lastValueFrom(
-      this.httpService.post(`${this.baseUrl}/identity/lineness`, payload, {
-        headers: this.header,
-      }),
+      this.httpService.post(
+        `${this.baseUrl}verification/identity/liveness`,
+        payload,
+        {
+          headers: this.header,
+        },
+      ),
     );
     return response.data;
   }

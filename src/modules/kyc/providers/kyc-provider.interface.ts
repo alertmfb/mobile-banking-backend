@@ -13,7 +13,7 @@ export interface KycProvider {
   addressStatus(payload: any): Promise<any>;
   bvnFaceMatch(payload: any): Promise<any>;
   ninFaceMatch(payload: any): Promise<any>;
-  lineliness?(payload: any): Promise<any>;
+  liveness?(payload: any): Promise<any>;
   verifyBankAccount(payload: any): Promise<any>;
   getBankList(payload: any): Promise<any>;
 }

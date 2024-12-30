@@ -377,16 +377,37 @@ export class KycService {
         );
       }
 
-      const response = await this.kycProvider.lineliness(image);
-      if (!response || !response.data.entity) {
+      const kyc = await this.kycRepository.getByUserId(userId);
+
+      if (!kyc || !kyc.bvnStatus) {
+        throw new HttpException(
+          ErrorMessages.BVN_IS_A_MUST_BEFORE_FACE,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const response = await this.kycProvider.bvnFaceMatch({
+        bvn:
+          this.enviroment == 'production'
+            ? decrypt(user.bvnLookup)
+            : '22222222222',
+        selfie_image: image,
+      });
+      if (!response || !response.entity) {
         throw new HttpException(
           ErrorMessages.COULD_NOT_VERIFY_FACE +
             `Reason: ${response.data.message}`,
           HttpStatus.BAD_REQUEST,
         );
       }
+      const { match } = response.entity.selfie_verification;
 
-      const kyc = await this.kycRepository.getByUserId(userId);
+      if (!match) {
+        throw new HttpException(
+          ErrorMessages.FACE_DOES_NOT_MATCH,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       kyc.faceVerifyStatus = true;
       await this.kycRepository.updateKycByUserId(userId, kyc);
       return await this.kycRepository.getByUserId(userId);
