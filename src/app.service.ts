@@ -12,10 +12,10 @@ export class AppService {
     try {
       // Truncate all specified tables
       await Promise.all([
-        this.prismaService.user.deleteMany(),
         this.prismaService.kyc.deleteMany(),
         this.prismaService.account.deleteMany(),
         this.prismaService.residentialAddress.deleteMany(),
+        this.prismaService.user.deleteMany(),
       ]);
 
       // Return true if all operations are successful

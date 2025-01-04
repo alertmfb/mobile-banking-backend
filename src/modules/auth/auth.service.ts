@@ -293,7 +293,9 @@ export class AuthService {
         return {
           message: `We have sent an OTP to ${obfuscatePhoneNumber(user.phoneNumber)}. Valid for 1 hour`,
           otp: otp,
-          name: `${user.firstName || ''} ${user.otherName || ''} ${user.lastName || ''}`.toUpperCase(),
+          name: `${user.firstName || ''} ${user.otherName || ''} ${user.lastName || ''}`
+            .toUpperCase()
+            .replace(/,/g, ''),
           phoneNumber: user.phoneNumber,
         };
       }
@@ -373,7 +375,9 @@ export class AuthService {
       return {
         message: `We have sent an OTP to ${obfuscatePhoneNumber(phoneNumber)}. Valid for 1 hour`,
         otp: otp,
-        name: `${nameToUse[0] || ''} ${nameToUse[1] || ''} ${nameToUse[2] || ''}`.toUpperCase(),
+        name: `${nameToUse[0] || ''} ${nameToUse[1] || ''} ${nameToUse[2] || ''}`
+          .toUpperCase()
+          .replace(/,/g, ''),
         phoneNumber,
       };
     } catch (e) {
