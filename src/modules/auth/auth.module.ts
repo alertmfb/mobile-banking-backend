@@ -6,7 +6,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AccountModule } from '../account/account.module';
-import { AccountService } from '../account/account.service';
 import { AccountRepository } from '../account/account.repository';
 import { KycService } from '../kyc/kyc.service';
 import { HttpModule } from '@nestjs/axios';

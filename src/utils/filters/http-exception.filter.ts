@@ -3,7 +3,6 @@ import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
-  HttpException,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
@@ -46,7 +45,7 @@ export class HttpErrorFilter implements ExceptionFilter {
 
     Logger.error(
       `${request.method} ${request.url}`,
-      JSON.stringify(devErrorResponse),
+      JSON.stringify(devErrorResponse, null, 2),
       'ExceptionFilter',
     );
 

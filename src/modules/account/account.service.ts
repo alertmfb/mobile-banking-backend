@@ -29,8 +29,8 @@ export class AccountService {
     this.enviroment = this.configService.get<string>('APP_ENV');
     this.coreBankingUrl =
       this.enviroment == 'production'
-        ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/core'
-        : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/core';
+        ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1'
+        : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1';
     this.coreBankingAuthKey =
       this.enviroment == 'production'
         ? this.configService.get<string>('CORE_BANKING_SANDOX_KEY')
@@ -176,6 +176,7 @@ export class AccountService {
   }
 
   async getAccountByAccountNumber(accountNo: string) {
+    console.log('accountNo', accountNo);
     const response = await lastValueFrom(
       this.httpService.get(
         `${this.coreBankingUrl}/customers/get-by-accountNo`,

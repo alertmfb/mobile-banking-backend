@@ -30,6 +30,7 @@ import { RequestResetDto } from './dto/request-reset.dto';
 import { AccountCreateEvent } from '../account/events/account-create.event';
 import { Events } from 'src/shared/enums/events.enum';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { KycService } from '../kyc/kyc.service';
 
 @Injectable()
 export class AuthService {
@@ -41,6 +42,7 @@ export class AuthService {
     private readonly userService: UserService,
     private jwtService: JwtService,
     private readonly accountService: AccountService,
+    private readonly kycService: KycService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -132,6 +134,7 @@ export class AuthService {
         refresh_token: await this.jwtService.signAsync(payload, {
           expiresIn: '7d',
         }),
+        kyc: await this.kycService.getKyc(user.id),
       };
     } catch (e) {
       this.logger.error(e.message);
@@ -290,6 +293,7 @@ export class AuthService {
         return {
           message: `We have sent an OTP to ${obfuscatePhoneNumber(user.phoneNumber)}. Valid for 1 hour`,
           otp: otp,
+          name: `${user.firstName || ''} ${user.otherName || ''} ${user.lastName || ''}`.toUpperCase(),
         };
       }
 
@@ -368,6 +372,7 @@ export class AuthService {
       return {
         message: `We have sent an OTP to ${obfuscatePhoneNumber(phoneNumber)}. Valid for 1 hour`,
         otp: otp,
+        name: `${nameToUse[0] || ''} ${nameToUse[1] || ''} ${nameToUse[2] || ''}`.toUpperCase(),
       };
     } catch (e) {
       this.logger.error(e.message);
