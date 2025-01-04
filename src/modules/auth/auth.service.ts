@@ -294,6 +294,7 @@ export class AuthService {
           message: `We have sent an OTP to ${obfuscatePhoneNumber(user.phoneNumber)}. Valid for 1 hour`,
           otp: otp,
           name: `${user.firstName || ''} ${user.otherName || ''} ${user.lastName || ''}`.toUpperCase(),
+          phoneNumber: user.phoneNumber,
         };
       }
 
@@ -373,6 +374,7 @@ export class AuthService {
         message: `We have sent an OTP to ${obfuscatePhoneNumber(phoneNumber)}. Valid for 1 hour`,
         otp: otp,
         name: `${nameToUse[0] || ''} ${nameToUse[1] || ''} ${nameToUse[2] || ''}`.toUpperCase(),
+        phoneNumber,
       };
     } catch (e) {
       this.logger.error(e.message);
