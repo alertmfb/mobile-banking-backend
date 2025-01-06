@@ -29,8 +29,8 @@ export class AccountService {
     this.enviroment = this.configService.get<string>('APP_ENV');
     this.coreBankingUrl =
       this.enviroment == 'production'
-        ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1'
-        : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1';
+        ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/core'
+        : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/core';
     this.coreBankingAuthKey =
       this.enviroment == 'production'
         ? this.configService.get<string>('CORE_BANKING_SANDOX_KEY')
@@ -40,7 +40,6 @@ export class AccountService {
     };
     this.logger = new Logger(AccountService.name);
     this.accountCreationRunning = false;
-    console.log('AccountService initialized');
   }
 
   async storeAccount(account: Prisma.AccountCreateInput) {
@@ -122,6 +121,8 @@ export class AccountService {
         Address: `${residentialAdress.address}, ${residentialAdress.city}, ${residentialAdress.state}`,
         Email: user.email,
       };
+
+      console.log('Data', data);
 
       // console.log('Creating account...', data);
       const response = await lastValueFrom(
@@ -214,7 +215,6 @@ export class AccountService {
 
   @Cron(CronExpression.EVERY_5_SECONDS)
   async handleCreateAccount() {
-    // this.logger.log(`Cron job started at ${new Date().toISOString()}`);
     if (this.accountCreationRunning) {
       this.logger.warn('Previous job still running. Skipping this execution.');
       return;
@@ -224,6 +224,7 @@ export class AccountService {
       const kycs = await this.kycService.getManyKycWhereQuery(
         {
           bvnStatus: true,
+          residentialAddressSubmitted: true,
           accountIssued: false,
         },
         5,

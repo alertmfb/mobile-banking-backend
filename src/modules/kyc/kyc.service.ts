@@ -9,7 +9,6 @@ import { ResidentialAddressDto } from './dto/residential-address.dto';
 import { KycProvider } from './providers/kyc-provider.interface';
 import { NationalityDto } from './dto/nationality.dto';
 import { KycRepository } from './kyc.repository';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserService } from '../user/user.service';
 import { ErrorMessages } from 'src/shared/enums/error.message.enum';
 import { BvnDto } from './dto/bvn.dto';
@@ -28,6 +27,9 @@ import { MessagingService } from '../messaging/messaging-service.interface';
 import { ConfigService } from '@nestjs/config';
 import { VerifyBvnOtpDto } from './dto/verify-bvn-otp.dto';
 import { Prisma } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AccountCreateEvent } from '../account/events/account-create.event';
+import { Events } from 'src/shared/enums/events.enum';
 
 @Injectable()
 export class KycService {
@@ -450,8 +452,6 @@ export class KycService {
 
       const { status, reference_id } = response.entity;
 
-      console.log(status);
-
       if (residentialAddress) {
         await this.kycRepository.updateResidentialAddressByUserId(userId, {
           address: payload.address,
@@ -479,12 +479,21 @@ export class KycService {
         });
       }
 
+      const kyc = await this.kycRepository.getByUserId(userId);
+      if (kyc) {
+        kyc.residentialAddressSubmitted = true;
+        await this.kycRepository.updateKycByUserId(userId, kyc);
+      }
+
+      //initiate create account
+      this.initiateCreateAccountEvent(userId);
+
       if (status == 'success') {
-        const kyc = await this.kycRepository.getByUserId(userId);
         if (!kyc) {
           await this.kycRepository.createKyc({
             user: { connect: { id: user.id } },
             residentialAddressStatus: true,
+            residentialAddressSubmitted: true,
           });
         } else {
           kyc.residentialAddressStatus = true;
@@ -492,7 +501,6 @@ export class KycService {
         }
         return await this.kycRepository.getByUserId(userId);
       }
-
       return await this.kycRepository.getResidentialAddress(userId);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -547,5 +555,12 @@ export class KycService {
 
   async updateKyc(userId: string, data: Prisma.KycUpdateInput) {
     return await this.kycRepository.updateKycByUserId(userId, data);
+  }
+
+  initiateCreateAccountEvent(userId: string) {
+    this.logger.log(`Initiating account creation for user ${userId}`);
+    const event = new AccountCreateEvent();
+    event.userId = userId;
+    this.eventEmitter.emit(Events.ON_CREATE_ACCOUNT_NUMBER, event);
   }
 }

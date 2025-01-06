@@ -141,6 +141,7 @@ model Kyc {
   faceVerifyStatus         Boolean  @default(false)
   ninStatus                Boolean  @default(false)
   bvnStatus                Boolean  @default(false)
+  residentialAddressSubmitted Boolean  @default(false)
   residentialAddressStatus Boolean  @default(false)
   attestation              Boolean  @default(false)
   accountIssued            Boolean  @default(false)
