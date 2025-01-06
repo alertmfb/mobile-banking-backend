@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './modules/prisma/prisma.service';
+// import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class AppService {
@@ -15,8 +16,12 @@ export class AppService {
         this.prismaService.residentialAddress.deleteMany(),
         this.prismaService.kyc.deleteMany(),
         this.prismaService.account.deleteMany(),
+        this.prismaService.securityQuestion.deleteMany(),
         this.prismaService.user.deleteMany(),
       ]);
+      //
+      // const prisma = PrismaClient();
+      // await prisma.$executeRaw`TRUNCATE TABLE residential_addresses, kycs, accounts, users RESTART IDENTITY CASCADE;`;
 
       // Return true if all operations are successful
       return true;
