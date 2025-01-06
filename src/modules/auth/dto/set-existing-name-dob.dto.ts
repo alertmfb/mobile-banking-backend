@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class SetNameDobDto {
+export class SetExistingNameDobDto {
   @IsDefined()
   @IsNotEmpty()
   @ApiProperty({ required: true, example: 'John' })
@@ -27,7 +27,7 @@ export class SetNameDobDto {
   @ApiProperty({
     required: true,
     example: '08012345678',
-    description: 'Phone number or Account Number',
+    description: 'Account Number',
   })
-  phoneNumber: string;
+  accountNumber: string;
 }

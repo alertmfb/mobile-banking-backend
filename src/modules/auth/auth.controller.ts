@@ -27,6 +27,7 @@ import { SetExistingPasscodeDto } from './dto/set-existing-passcode.dto';
 import { ResetPasscodeDto } from './dto/reset-passcode.dto';
 import { VerifyResetPasscodeDto } from './dto/verify-reset-passcode.dto';
 import { RequestResetDto } from './dto/request-reset.dto';
+import { SetExistingNameDobDto } from './dto/set-existing-name-dob.dto';
 
 @ApiTags('Auth Service')
 @Controller('/auth')
@@ -156,12 +157,19 @@ export class AuthController {
   }
 
   @Post('signup/set-name-dob')
-  @UseGuards(JwtAuthGuard)
-  async setNameDob(@Body() payload: SetNameDobDto, @User() user: JwtPayload) {
+  async setNameDob(@Body() payload: SetNameDobDto) {
     try {
-      const userId = user.id;
-      console.log('userId', userId);
-      const response = await this.authService.setNameAndDob(userId, payload);
+      const response = await this.authService.setNameAndDob(payload);
+      return new SuccessResponseDto(SuccessMessage.NAME_DOB_SET, response);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('signup/set-existing-name-dob')
+  async setExistingNameDob(@Body() payload: SetExistingNameDobDto) {
+    try {
+      const response = await this.authService.setExistingNameAndDob(payload);
       return new SuccessResponseDto(SuccessMessage.NAME_DOB_SET, response);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);

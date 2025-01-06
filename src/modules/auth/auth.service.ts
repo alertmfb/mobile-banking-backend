@@ -31,6 +31,7 @@ import { AccountCreateEvent } from '../account/events/account-create.event';
 import { Events } from 'src/shared/enums/events.enum';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { KycService } from '../kyc/kyc.service';
+import { SetExistingNameDobDto } from './dto/set-existing-name-dob.dto';
 
 @Injectable()
 export class AuthService {
@@ -694,22 +695,67 @@ export class AuthService {
     }
   }
 
-  async setNameAndDob(userId: string, payload: SetNameDobDto): Promise<any> {
+  async setNameAndDob(payload: SetNameDobDto): Promise<any> {
     try {
-      const { firstName, lastName, otherName, dob } = payload;
-      const user = await this.userService.findById(userId);
+      const { firstName, lastName, otherName, dob, phoneNumber } = payload;
+      const user = await this.userService.findOneByPhoneNumber(phoneNumber);
       if (!user) {
         throw new HttpException(
           ErrorMessages.USER_NOT_FOUND,
           HttpStatus.NOT_FOUND,
         );
       }
+      const validOnboardingStates = ['PHONE_VERIFIED', 'EMAIL_VERIFIED'];
+      if (!validOnboardingStates.includes(user.onboarding)) {
+        throw new HttpException(
+          ErrorMessages.EMAIL_MUST_VERIFIED,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       user.firstName = firstName;
       user.lastName = lastName;
       user.otherName = otherName;
       user.dob = dob;
-      user.onboarding = 'COMPLETED';
+      user.onboarding = 'EMAIL_VERIFIED';
       await this.userService.update(user.id, user);
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async setExistingNameAndDob(payload: SetExistingNameDobDto): Promise<any> {
+    try {
+      const { firstName, lastName, otherName, dob, accountNumber } = payload;
+      const account =
+        await this.accountService.findStoredByAccountNumber(accountNumber);
+      if (!account) {
+        throw new HttpException(
+          ErrorMessages.ACCOUNT_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const user = await this.userService.findById(account.userId);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const validOnboardingStates = ['PHONE_VERIFIED', 'EMAIL_VERIFIED'];
+      if (!validOnboardingStates.includes(user.onboarding)) {
+        throw new HttpException(
+          ErrorMessages.EMAIL_MUST_VERIFIED,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      user.firstName = firstName;
+      user.lastName = lastName;
+      user.otherName = otherName;
+      user.dob = dob;
+      user.onboarding = 'EMAIL_VERIFIED';
+      await this.userService.update(user.id, user);
+      return await this.signInWithPasscode(user.phoneNumber, '1234');
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);

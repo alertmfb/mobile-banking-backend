@@ -38,4 +38,5 @@ export enum ErrorMessages {
   ACCOUNT_ALREADY_EXISTS = 'Account already exists',
   BVN_IS_A_MUST_BEFORE_FACE = 'You must verify BVN before verifying your face',
   FACE_DOES_NOT_MATCH = 'We could not verify your face: Face does not match. Try again',
+  EMAIL_MUST_VERIFIED = 'Email must be verified',
 }
