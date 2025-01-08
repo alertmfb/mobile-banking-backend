@@ -107,7 +107,7 @@ export class TransactionService {
           `${this.coreBankingUrl}/transactions/name-enquiry`,
           {
             AccountNumber: accountNumber,
-            BanCode: bankCode,
+            BankCode: bankCode,
           },
           { headers: this.headers },
         ),

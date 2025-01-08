@@ -74,7 +74,7 @@ model User {
   dob                String?
   pob                String?
   country            String?
-  phoneNumber        String               @unique
+  phoneNumber        String?               @unique
   onboardType        OnboardType          @default(NEW)
   onboarding         OnboardEnum          @default(NEW)
   kycStatus          KycEnum              @default(NEW)
