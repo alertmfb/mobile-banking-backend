@@ -3,7 +3,7 @@ import {
   IsDefined,
   IsNotEmpty,
   IsNumberString,
-  IsPhoneNumber,
+  // IsPhoneNumber,
   IsString,
   MaxLength,
   MinLength,
@@ -13,8 +13,8 @@ export class VerifyOtpDto {
   @IsDefined()
   @IsNotEmpty()
   @IsString()
-  @IsPhoneNumber('NG', { message: 'Invalid phone number' })
-  @ApiProperty({ required: true, example: '08012345678' })
+  // @IsPhoneNumber('NG', { message: 'Invalid phone number' })
+  @ApiProperty({ required: true, example: '08012345678 or user@example.com' })
   phoneNumber: string;
 
   @IsDefined()
