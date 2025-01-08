@@ -31,4 +31,9 @@ export enum SuccessMessage {
   QUESTION_CREATED = 'Security question created successfully',
   QUESTION_RETRIEVED = 'Security questions retrieved successfully',
   ACCOUNT_DETAILS_RETRIVED = 'Account details retrieved successfully',
+  ACCOUNT_BALANCE_RETRIVED = 'Account balance retrieved successfully',
+  ACCOUNT_CLOSED = 'Account closed successfully',
+  BANKS_FETCHED = 'Banks fetched successfully',
+  NAME_ENQUIRY = 'Name enquiry successful',
+  TRANSACTIONS_FETCHED = 'Transactions fetched successfully',
 }

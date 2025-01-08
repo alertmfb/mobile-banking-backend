@@ -15,6 +15,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './modules/user/user.module';
 import { SecurityModule } from './modules/security/security.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TransactionModule } from './modules/transaction/transaction.module';
+import { BeneficiaryModule } from './modules/beneficiary/beneficiary.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     AccountModule,
     EventsModule,
     SecurityModule,
+    TransactionModule,
+    BeneficiaryModule,
   ],
   controllers: [AppController],
   providers: [

@@ -155,7 +155,7 @@ export class UserService {
     return await this.userRepository.findOneByPhoneNumber(phoneNumber);
   }
 
-  async finByPhoneOrEmail(phoneOrEmail: string): Promise<User | undefined> {
+  async findOneByPhoneOrEmail(phoneOrEmail: string): Promise<User | undefined> {
     return await this.userRepository.findByPhoneOrEmail(phoneOrEmail);
   }
 

@@ -10,6 +10,9 @@ import { ErrorMessages } from 'src/shared/enums/error.message.enum';
 import { decrypt } from 'src/utils/helpers';
 import { randomInt } from 'node:crypto';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { plainToClass } from 'class-transformer';
+import { AccountBalanceResponseDto } from '../transaction/dtos/account-balance-reponse.dto';
+import { GenerateStatementQueryDto } from './dto/generate-statement-query.dto';
 
 @Injectable()
 export class AccountService {
@@ -207,6 +210,170 @@ export class AccountService {
         );
       }
       return account;
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getAccountBalance(userId: string) {
+    try {
+      const user = await this.userService.findOne(userId);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const account = await this.accountRepository.getAccountByUserId(user.id);
+      if (!account) {
+        throw new HttpException(
+          ErrorMessages.ACCOUNT_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const response = await this.balanceEnquiryApi(account.accountNumber);
+      console.log('Response', response);
+      return plainToClass(AccountBalanceResponseDto, response);
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async closeAccount(userId: string) {
+    try {
+      const user = await this.userService.findOne(userId);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const account = await this.accountRepository.getAccountByUserId(user.id);
+      if (!account) {
+        throw new HttpException(
+          ErrorMessages.ACCOUNT_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const response = await this.closeAccountApi(
+        account.accountNumber,
+        'Close Account',
+      );
+      return response;
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async generateStatement(userId: string, query: GenerateStatementQueryDto) {
+    try {
+      const user = await this.userService.findOne(userId);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const account = await this.accountRepository.getAccountByUserId(user.id);
+      if (!account) {
+        throw new HttpException(
+          ErrorMessages.ACCOUNT_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const response = await this.generateStatementApi({
+        ...query,
+        accountNumber: account.accountNumber,
+      });
+      return response;
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  //Bank One Endpoints for Transactions
+  async generateStatementApi(query: GenerateStatementQueryDto){
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(
+          `${this.coreBankingUrl}/accounts/generate-statement`,
+          {
+            params: query,
+            headers: this.headers,
+          },
+        ),
+      );
+      return response.data;
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getAccountByBvnApi(bvn: string) {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(`${this.coreBankingUrl}/customers/get-by-bvn`, {
+          headers: this.headers,
+          params: { bvn },
+        }),
+      );
+      return response.data;
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getAccountByPhoneApi(phoneNumber: string) {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(
+          `${this.coreBankingUrl}/customers/get-by-phoneNo`,
+          {
+            headers: this.headers,
+            params: { phoneNumber },
+          },
+        ),
+      );
+      return response.data;
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async balanceEnquiryApi(accountNumber: string) {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(
+          `${this.coreBankingUrl}/accounts/balance-enquiry`,
+          {
+            headers: this.headers,
+            params: { accountNumber },
+          },
+        ),
+      );
+      return response.data;
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async closeAccountApi(accountNumber: string, narration: string) {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post(
+          `${this.coreBankingUrl}/accounts/close-account`,
+          { accountNumber, narration },
+          { headers: this.headers },
+        ),
+      );
+      return response.data;
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.NOT_FOUND);

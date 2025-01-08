@@ -50,7 +50,7 @@ export class AuthService {
   async signInInitiate(payload: any): Promise<any> {
     try {
       const { phoneNumber } = payload;
-      const user = await this.userService.finByPhoneOrEmail(phoneNumber);
+      const user = await this.userService.findOneByPhoneOrEmail(phoneNumber);
       if (!user) {
         throw new HttpException(
           ErrorMessages.USER_NOT_FOUND,
@@ -102,7 +102,7 @@ export class AuthService {
     passcode: string,
   ): Promise<any> {
     try {
-      const user = await this.userService.finByPhoneOrEmail(emailorPhone);
+      const user = await this.userService.findOneByPhoneOrEmail(emailorPhone);
 
       if (!user) {
         throw new HttpException(
