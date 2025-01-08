@@ -36,4 +36,7 @@ export enum SuccessMessage {
   BANKS_FETCHED = 'Banks fetched successfully',
   NAME_ENQUIRY = 'Name enquiry successful',
   TRANSACTIONS_FETCHED = 'Transactions fetched successfully',
+  FEE_FETCHED = 'Fee fetched successfully',
+  MONEY_SENT = 'Money sent successfully',
+  PIN_CONFIRMED = 'PIN confirmed successfully',
 }

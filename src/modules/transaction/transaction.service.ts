@@ -58,6 +58,30 @@ export class TransactionService {
     }
   }
 
+  async confirmPin(pin: string) {
+    try {
+      console.log(pin);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async sendMoney(payload: InterBankTransferDto) {
+    try {
+      return await this.interBankTransfer(payload);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getFee(amount: number) {
+    try {
+      console.log(amount);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   //Bank One Endpoints for Transactions
   private async getTransactionsApi(query: GetTransactionsQueryDto) {
     try {
@@ -79,8 +103,12 @@ export class TransactionService {
   private async nameEnquiryApi(accountNumber: string, bankCode: string) {
     try {
       const response = await lastValueFrom(
-        this.httpService.get(
-          `${this.coreBankingUrl}/nameEnquiry?accountNumber=${accountNumber}&bankCode=${bankCode}`,
+        this.httpService.post(
+          `${this.coreBankingUrl}/transactions/name-enquiry`,
+          {
+            AccountNumber: accountNumber,
+            BanCode: bankCode,
+          },
           { headers: this.headers },
         ),
       );

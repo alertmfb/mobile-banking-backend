@@ -174,12 +174,14 @@ export class AuthService {
   async initiateSignUp(payload: InitiateSignUpDto): Promise<any> {
     try {
       const { phoneNumber, onboardType } = payload;
+
       if (onboardType === 'EXISTING') {
         return await this.handleExistingUser(phoneNumber);
       }
 
-      const user = await this.userService.findOneByPhoneNumber(phoneNumber);
+      const user = await this.userService.findOneByPhoneOrEmail(phoneNumber);
 
+      // check user exist & valid onboarding states
       const invalidOnboardStates = ['COMPLETED', 'SET_PIN', 'SET_PASSCODE'];
       if (user && invalidOnboardStates.includes(user.onboarding)) {
         throw new HttpException(
@@ -188,15 +190,37 @@ export class AuthService {
         );
       }
 
+      //check if phone number exists on bank one
+      // if(!phoneNumber.includes('@')) {
+      //   const phoneExist =
+      //   await this.accountService.getAccountByAccountNumber(phoneNumber);
+      //   console.log('phoneExist: ', phoneExist);
+      //   if (!phoneExist) {
+      //     throw new HttpException(
+      //       ErrorMessages.ACCOUNT_NOT_FOUND,
+      //       HttpStatus.NOT_FOUND,
+      //     );
+      // }
+
+      // give OTP
       const otp = Math.floor(100000 + Math.random() * 900000);
       const otpExpire = new Date(new Date().getTime() + 60 * 60 * 1000);
       const message = `Your verification code is ${otp}. Valid for 1 hour`;
 
-      // call messaging servide to send OTP
-      const response = await this.messagingService.sendSms(
-        toSmsNo(phoneNumber),
-        message,
-      );
+      let response: any;
+      if (phoneNumber.includes('@')) {
+        response = await this.messagingService.sendEmailToken({
+          email_address: phoneNumber,
+          code: otp,
+        });
+      } else {
+        response = await this.messagingService.sendSms(
+          toSmsNo(phoneNumber),
+          message,
+        );
+      }
+
+      console.log('response: ', response);
 
       if (!response) {
         throw new HttpException(
@@ -226,7 +250,8 @@ export class AuthService {
 
       // create new user
       await this.userService.create({
-        phoneNumber,
+        phoneNumber: !phoneNumber.includes('@') ? phoneNumber : null,
+        email: phoneNumber.includes('@') ? phoneNumber : null,
         otpId: otp.toString(),
         otp: otp.toString(),
         otpExpires: otpExpire,
@@ -427,7 +452,7 @@ export class AuthService {
   async verifyPhone(payload: VerifyOtpDto): Promise<any> {
     try {
       const { phoneNumber, otp } = payload;
-      const user = await this.userService.findOneByPhoneNumber(phoneNumber);
+      const user = await this.userService.findOneByPhoneOrEmail(phoneNumber);
       if (!user) {
         throw new HttpException(
           ErrorMessages.USER_NOT_FOUND,
@@ -608,7 +633,7 @@ export class AuthService {
     }
 
     // Find user by phone number
-    const user = await this.userService.findOneByPhoneNumber(phoneNumber);
+    const user = await this.userService.findOneByPhoneOrEmail(phoneNumber);
     if (!user) {
       throw new HttpException(
         ErrorMessages.USER_NOT_FOUND,
@@ -620,6 +645,7 @@ export class AuthService {
       'EMAIL_VERIFIED',
       'SET_PASSCODE',
       'PHONE_VERIFIED',
+      'COMPLETE',
     ];
     if (!validOnboardingStates.includes(user.onboarding)) {
       throw new HttpException(
