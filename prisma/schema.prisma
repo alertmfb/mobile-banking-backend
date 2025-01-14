@@ -163,3 +163,10 @@ model SecurityQuestion {
 
   @@map("security_questions")
 }
+
+model Card {
+  id        String   @id @default(uuid())
+  accountId String
+  cardType  String
+  pickupBranch String
+}

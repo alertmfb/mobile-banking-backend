@@ -14,8 +14,8 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       MESSAGING_URL: ${MESSAGING_URL}
       MESSAGING_KEY: ${MESSAGING_KEY}
-      KYB_URL: ${KYB_URL}
-      KYB_KEY: ${KYB_KEY}
+      KYC_URL: ${KYC_URL}
+      KYC_KEY: ${KYC_KEY}
     volumes:
       - .:/app
       - /app/node_modules

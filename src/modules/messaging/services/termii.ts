@@ -5,7 +5,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 
 export class Termii implements MessagingService {
-  private readonly authKey: string;
+  private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly header: any;
   private readonly enviroment: string;
@@ -14,16 +14,18 @@ export class Termii implements MessagingService {
     private readonly configService: ConfigService,
   ) {
     this.enviroment = this.configService.get<string>('APP_ENV');
-    this.authKey = this.configService.get<string>('MESSAGING_KEY');
+    this.apiKey = this.configService.get<string>('MESSAGING_KEY');
     this.baseUrl =
       this.enviroment === 'production'
         ? 'https://api-middleware-prod.alertmfb.com.ng/api/sharedServices/v1/messaging'
         : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/messaging';
+    console.log('this.apiKey', this.apiKey);
     this.header = {
-      appid: this.authKey,
+      apikey: this.apiKey,
     };
   }
   async sendSms(phone: string, message: string) {
+    console.log('header', this.header);
     try {
       const response = await lastValueFrom(
         this.httpService.post(

@@ -17,6 +17,7 @@ import { SecurityModule } from './modules/security/security.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { BeneficiaryModule } from './modules/beneficiary/beneficiary.module';
+import { CardModule } from './modules/card/card.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { BeneficiaryModule } from './modules/beneficiary/beneficiary.module';
     SecurityModule,
     TransactionModule,
     BeneficiaryModule,
+    CardModule,
   ],
   controllers: [AppController],
   providers: [

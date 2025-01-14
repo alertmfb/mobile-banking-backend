@@ -28,8 +28,8 @@ jobs:
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           echo "MESSAGING_URL=${{ secrets.MESSAGING_URL }}" >> .env
           echo "MESSAGING_KEY=${{ secrets.MESSAGING_KEY }}" >> .env
-          echo "KYB_URL=${{ secrets.KYB_URL }}" >> .env
-          echo "KYB_KEY=${{ secrets.KYB_KEY }}" >> .env
+          echo "KYC_URL=${{ secrets.KYC_URL }}" >> .env
+          echo "KYC_KEY=${{ secrets.KYC_KEY }}" >> .env
           docker compose --env-file .env -f compose.sandbox.yml up --build -d
           EOF
 
@@ -54,7 +54,7 @@ jobs:
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           echo "MESSAGING_URL=${{ secrets.MESSAGING_URL }}" >> .env
           echo "MESSAGING_KEY=${{ secrets.MESSAGING_KEY }}" >> .env
-          echo "KYB_URL=${{ secrets.KYB_URL }}" >> .env
-          echo "KYB_KEY=${{ secrets.KYB_KEY }}" >> .env
+          echo "KYC_URL=${{ secrets.KYC_URL }}" >> .env
+          echo "KYC_KEY=${{ secrets.KYC_KEY }}" >> .env
           docker compose --env-file .env -f compose.prod.yml up --build -d
           EOF
