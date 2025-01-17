@@ -38,8 +38,11 @@ export class Termii implements MessagingService {
         ),
       );
       return response.data;
-    } catch (e) {
-      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      throw new HttpException(
+        `Messaging Error: ${error?.response?.data?.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
     }
   }
   async sendBulkSms(message: string, phone: string[]) {
@@ -57,18 +60,23 @@ export class Termii implements MessagingService {
         ),
       );
       return response.data;
-    } catch (e) {
-      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      throw new HttpException(
+        `Messaging Error: ${error?.response?.data?.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
     }
   }
+
   async sendWhatsapp(phone: string, message: string) {
+    console.log('sending whatsapp', { phone, message });
     try {
       const response = await lastValueFrom(
         this.httpService.post(
-          `${this.baseUrl}/whatsapp/send`,
+          `${this.baseUrl}/broadcast/whatsapp`,
           {
             to: phone,
-            message,
+            sms: message,
           },
           {
             headers: this.header,
@@ -76,10 +84,14 @@ export class Termii implements MessagingService {
         ),
       );
       return response.data;
-    } catch (e) {
-      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      throw new HttpException(
+        `Messaging Error: ${error?.response?.data?.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
     }
   }
+
   async sendSmsToken(payload: any) {
     try {
       const response = await lastValueFrom(
@@ -88,10 +100,10 @@ export class Termii implements MessagingService {
         }),
       );
       return response.data;
-    } catch (e) {
+    } catch (error) {
       throw new HttpException(
-        `Could not send OTP: ` + e.message,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        `Messaging Error: ${error?.response?.data?.message}`,
+        error?.response?.data?.statusCode || error.status,
       );
     }
   }
@@ -104,8 +116,11 @@ export class Termii implements MessagingService {
         }),
       );
       return response.data;
-    } catch (e) {
-      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      throw new HttpException(
+        `Messaging Error: ${error?.response?.data?.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
     }
   }
 
@@ -118,8 +133,11 @@ export class Termii implements MessagingService {
         }),
       );
       return response.data;
-    } catch (e) {
-      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      throw new HttpException(
+        `Messaging Error: ${error?.response?.data?.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
     }
   }
 
@@ -131,8 +149,11 @@ export class Termii implements MessagingService {
         }),
       );
       return response.data;
-    } catch (e) {
-      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      throw new HttpException(
+        `Messaging Error: ${error?.response?.data?.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
     }
   }
 }

@@ -218,6 +218,11 @@ export class AuthService {
           toSmsNo(phoneNumber),
           message,
         );
+
+        await this.messagingService.sendWhatsapp(
+          toSmsNo(phoneNumber),
+          otp.toString(),
+        );
       }
 
       console.log('response: ', response);
@@ -309,6 +314,10 @@ export class AuthService {
           toSmsNo(user.phoneNumber),
           message,
         );
+        await this.messagingService.sendWhatsapp(
+          toSmsNo(user.phoneNumber),
+          otp.toString(),
+        );
         if (!otpResponse) {
           throw new HttpException(
             ErrorMessages.COULD_NOT_SEND_OTP,
@@ -390,6 +399,10 @@ export class AuthService {
       const otpResponse = await this.messagingService.sendSms(
         toSmsNo(phoneNumber),
         message,
+      );
+      await this.messagingService.sendWhatsapp(
+        toSmsNo(phoneNumber),
+        otp.toString(),
       );
       if (!otpResponse) {
         throw new HttpException(
