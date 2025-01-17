@@ -79,9 +79,9 @@ export class AccountService {
         }
       }
 
-      const kyb = await this.kycService.getKyc(userId);
+      const kyc = await this.kycService.getKyc(userId);
 
-      if (!kyb) {
+      if (!kyc) {
         if (background) {
           return;
         } else {
@@ -97,7 +97,7 @@ export class AccountService {
       }
 
       // check if user has done bvn and nin verification
-      if (!kyb.bvnStatus && !kyb.ninStatus) {
+      if (!kyc.bvnStatus && !kyc.ninStatus) {
         throw new HttpException(
           'User has not done BVN or NIN verification',
           HttpStatus.NOT_FOUND,
@@ -199,7 +199,7 @@ export class AccountService {
         provider: 'BANKONE',
       });
 
-      //update kyb
+      //update kyc
       await this.kycService.updateKyc(user.id, {
         accountIssued: true,
       });
@@ -434,7 +434,7 @@ export class AccountService {
     }
     this.accountCreationRunning = true;
     try {
-      const kybs = await this.kycService.getManyKycWhereQuery(
+      const kycs = await this.kycService.getManyKycWhereQuery(
         {
           bvnStatus: true,
           residentialAddressSubmitted: true,
@@ -442,9 +442,9 @@ export class AccountService {
         },
         5,
       );
-      for (const kyb of kybs) {
+      for (const kyc of kycs) {
         const background = true;
-        await this.createAccount(kyb.userId, background);
+        await this.createAccount(kyc.userId, background);
       }
     } catch (error) {
       this.logger.error('Error creating account', error);

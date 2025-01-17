@@ -19,13 +19,11 @@ export class Termii implements MessagingService {
       this.enviroment === 'production'
         ? 'https://api-middleware-prod.alertmfb.com.ng/api/sharedServices/v1/messaging'
         : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/messaging';
-    console.log('this.apiKey', this.apiKey);
     this.header = {
       apikey: this.apiKey,
     };
   }
   async sendSms(phone: string, message: string) {
-    console.log('header', this.header);
     try {
       const response = await lastValueFrom(
         this.httpService.post(
