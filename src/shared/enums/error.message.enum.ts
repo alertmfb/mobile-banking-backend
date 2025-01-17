@@ -39,4 +39,9 @@ export enum ErrorMessages {
   BVN_IS_A_MUST_BEFORE_FACE = 'You must verify BVN before verifying your face',
   FACE_DOES_NOT_MATCH = 'We could not verify your face: Face does not match. Try again',
   EMAIL_MUST_VERIFIED = 'Email must be verified',
+  USER_DETAILS_INCOMPLETE = 'User details incomplete',
+  USER_NOT_DONE_KYC = 'User has not done KYC',
+  USER_BVN_NOT_FOUND = 'User BVN not found',
+  USER_ADDRESS_NOT_AVAILABLE = 'User residential address not set',
+  CARD_REQUEST_NOT_FOUND = 'Card request not found',
 }

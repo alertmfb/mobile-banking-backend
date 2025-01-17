@@ -30,6 +30,10 @@ jobs:
           echo "MESSAGING_KEY=${{ secrets.MESSAGING_KEY }}" >> .env
           echo "KYC_URL=${{ secrets.KYC_URL }}" >> .env
           echo "KYC_KEY=${{ secrets.KYC_KEY }}" >> .env
+          echo "CORE_BANKING_SANDOX_URL=${{ secrets.CORE_BANKING_SANDOX_URL }}" >> .env
+          echo "CORE_BANKING_SANDOX_KEY=${{ secrets.CORE_BANKING_SANDOX_KEY }}" >> .env
+          echo "CORE_BANKING_LIVE_URL=${{ secrets.CORE_BANKING_LIVE_URL }}" >> .env
+          echo "CORE_BANKING_LIVE_KEY=${{ secrets.CORE_BANKING_LIVE_KEY }}" >> .env
           docker compose --env-file .env -f compose.sandbox.yml up --build -d
           EOF
 
@@ -56,5 +60,9 @@ jobs:
           echo "MESSAGING_KEY=${{ secrets.MESSAGING_KEY }}" >> .env
           echo "KYC_URL=${{ secrets.KYC_URL }}" >> .env
           echo "KYC_KEY=${{ secrets.KYC_KEY }}" >> .env
+          echo "CORE_BANKING_SANDOX_URL=${{ secrets.CORE_BANKING_SANDOX_URL }}" >> .env
+          echo "CORE_BANKING_SANDOX_KEY=${{ secrets.CORE_BANKING_SANDOX_KEY }}" >> .env
+          echo "CORE_BANKING_LIVE_URL=${{ secrets.CORE_BANKING_LIVE_URL }}" >> .env
+          echo "CORE_BANKING_LIVE_KEY=${{ secrets.CORE_BANKING_LIVE_KEY }}" >> .env
           docker compose --env-file .env -f compose.prod.yml up --build -d
           EOF

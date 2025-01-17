@@ -16,12 +16,12 @@ import { GenerateStatementQueryDto } from './dto/generate-statement-query.dto';
 
 @Injectable()
 export class AccountService {
-  private readonly coreBankingUrl;
-  private readonly coreBankingAuthKey;
-  private readonly enviroment;
-  private readonly headers;
-  private readonly logger;
-  private accountCreationRunning;
+  private readonly coreBankingUrl: string;
+  private readonly coreBankingAuthKey: string;
+  private readonly environment: string;
+  private readonly headers: { apikey: string };
+  private readonly logger: Logger;
+  private accountCreationRunning: boolean;
   constructor(
     private readonly accountRepository: AccountRepository,
     private readonly userService: UserService,
@@ -29,17 +29,17 @@ export class AccountService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
-    this.enviroment = this.configService.get<string>('APP_ENV');
+    this.environment = this.configService.get<string>('APP_ENV');
     this.coreBankingUrl =
-      this.enviroment == 'production'
+      this.environment == 'production'
         ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/core'
         : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/core';
     this.coreBankingAuthKey =
-      this.enviroment == 'production'
-        ? this.configService.get<string>('CORE_BANKING_SANDOX_KEY')
-        : this.configService.get<string>('CORE_BANKING_LIVE_KEY');
+      this.environment == 'production'
+        ? this.configService.get<string>('CORE_BANKING_LIVE_KEY')
+        : this.configService.get<string>('CORE_BANKING_SANDOX_KEY');
     this.headers = {
-      Authorization: this.coreBankingAuthKey,
+      apikey: this.coreBankingAuthKey,
     };
     this.logger = new Logger(AccountService.name);
     this.accountCreationRunning = false;
@@ -53,42 +53,53 @@ export class AccountService {
     return this.accountRepository.findByAccountNumber(accountNumber);
   }
 
-  async createAccount(userId: string) {
+  async createAccount(userId: string, background?: boolean) {
     try {
       const user = await this.userService.findOne(userId);
       if (!user) {
-        throw new HttpException(
-          ErrorMessages.USER_NOT_FOUND,
-          HttpStatus.NOT_FOUND,
-        );
+        if (background) {
+          return;
+        } else {
+          throw new HttpException(
+            ErrorMessages.USER_NOT_FOUND,
+            HttpStatus.NOT_FOUND,
+          );
+        }
       }
 
       const account = await this.accountRepository.getAccountByUserId(user.id);
       if (account) {
-        throw new HttpException(
-          ErrorMessages.ACCOUNT_ALREADY_EXISTS,
-          HttpStatus.CONFLICT,
-        );
+        if (background) {
+          return;
+        } else {
+          throw new HttpException(
+            ErrorMessages.ACCOUNT_ALREADY_EXISTS,
+            HttpStatus.CONFLICT,
+          );
+        }
       }
 
-      const kyc = await this.kycService.getKyc(userId);
+      const kyb = await this.kycService.getKyc(userId);
 
-      if (!kyc) {
-        throw new HttpException('User has not done KYC', HttpStatus.NOT_FOUND);
+      if (!kyb) {
+        if (background) {
+          return;
+        } else {
+          if (background) {
+            return;
+          } else {
+            throw new HttpException(
+              ErrorMessages.USER_NOT_DONE_KYC,
+              HttpStatus.NOT_FOUND,
+            );
+          }
+        }
       }
 
       // check if user has done bvn and nin verification
-      if (!kyc.bvnStatus && !kyc.ninStatus) {
+      if (!kyb.bvnStatus && !kyb.ninStatus) {
         throw new HttpException(
           'User has not done BVN or NIN verification',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      // check if user has added nationality
-      if (!kyc.nationalityStatus) {
-        throw new HttpException(
-          `User has not added nationality`,
           HttpStatus.NOT_FOUND,
         );
       }
@@ -98,20 +109,49 @@ export class AccountService {
         await this.kycService.getResidentialAddress(userId);
 
       if (!residentialAdress) {
-        throw new HttpException(
-          'User residential address not found',
-          HttpStatus.NOT_FOUND,
-        );
+        if (background) {
+          return;
+        } else {
+          throw new HttpException(
+            ErrorMessages.USER_ADDRESS_NOT_AVAILABLE,
+            HttpStatus.NOT_FOUND,
+          );
+        }
       }
 
       if (!user.bvnLookup) {
-        throw new HttpException('User BVN not found', HttpStatus.NOT_FOUND);
+        if (background) {
+          return;
+        } else {
+          throw new HttpException(
+            ErrorMessages.USER_BVN_NOT_FOUND,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      }
+
+      //check if names, email, phone number, dob is set
+      if (
+        !user.firstName ||
+        !user.lastName ||
+        !user.email ||
+        !user.phoneNumber ||
+        !user.dob
+      ) {
+        if (background) {
+          return;
+        } else {
+          throw new HttpException(
+            ErrorMessages.USER_DETAILS_INCOMPLETE,
+            HttpStatus.NOT_FOUND,
+          );
+        }
       }
 
       const data = {
         Gender: user.gender == 'MALE' ? '0' : '1',
         BVN:
-          this.enviroment == 'production'
+          this.environment == 'production'
             ? decrypt(user.bvnLookup)
             : randomInt(10000000000, 99999999999).toString(),
 
@@ -125,13 +165,17 @@ export class AccountService {
         Email: user.email,
       };
 
-      console.log('Data', data);
+      console.log('Creating account...', data);
 
       // console.log('Creating account...', data);
+      console.log('ky', this.headers);
       const response = await lastValueFrom(
         this.httpService.post(
           `${this.coreBankingUrl}/accounts/create-account`,
           data,
+          {
+            headers: this.headers,
+          },
         ),
       );
 
@@ -155,7 +199,7 @@ export class AccountService {
         provider: 'BANKONE',
       });
 
-      //update kyc
+      //update kyb
       await this.kycService.updateKyc(user.id, {
         accountIssued: true,
       });
@@ -163,9 +207,11 @@ export class AccountService {
       // create account number
       console.log('Account created');
       return;
-    } catch (e) {
-      this.logger.error(e.message);
-      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    } catch (error) {
+      throw new HttpException(
+        `Account Error: ${error?.response?.data?.message || error.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
     }
   }
 
@@ -388,7 +434,7 @@ export class AccountService {
     }
     this.accountCreationRunning = true;
     try {
-      const kycs = await this.kycService.getManyKycWhereQuery(
+      const kybs = await this.kycService.getManyKycWhereQuery(
         {
           bvnStatus: true,
           residentialAddressSubmitted: true,
@@ -396,11 +442,12 @@ export class AccountService {
         },
         5,
       );
-      for (const kyc of kycs) {
-        await this.createAccount(kyc.userId);
+      for (const kyb of kybs) {
+        const background = true;
+        await this.createAccount(kyb.userId, background);
       }
-    } catch (e) {
-      this.logger.error(e.message);
+    } catch (error) {
+      this.logger.error('Error creating account', error);
     } finally {
       this.accountCreationRunning = false;
     }
