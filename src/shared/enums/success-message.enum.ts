@@ -1,6 +1,6 @@
 export enum SuccessMessage {
   SIGNUP_INITIATED = 'Signup initiated successfully',
-  PHONE_VERIFIED = 'Phone number verified successfully',
+  PHONE_VERIFIED = 'Email address / Phone number verified successfully',
   PASSCODE_SET = 'Passcode set successfully',
   PIN_SET = 'Transaction Pin set successfully',
   SIGNUP_COMPLETED = 'Signup completed successfully',

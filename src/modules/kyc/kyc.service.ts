@@ -22,6 +22,7 @@ import {
   obfuscatePhoneNumber,
   formatBvnDate,
   ninIsValid,
+  toLowerCase,
 } from 'src/utils/helpers';
 import { MessagingService } from '../messaging/messaging-service.interface';
 import { ConfigService } from '@nestjs/config';
@@ -34,7 +35,8 @@ import { Events } from 'src/shared/enums/events.enum';
 @Injectable()
 export class KycService {
   private readonly logger: Logger;
-  private readonly enviroment;
+  private readonly enviroment: string;
+  private testBvn = '22222222222';
   constructor(
     @Inject('KycProvider')
     private readonly kycProvider: KycProvider,
@@ -128,9 +130,21 @@ export class KycService {
         );
       }
 
+      // Check if BVN already exists
+      const bvnStr = encrypt(bvn);
+      const bvnLookUp = await this.userService.bvnLookup(bvnStr);
+      if (bvnLookUp) {
+        throw new HttpException(
+          ErrorMessages.BVN_ALREADY_EXISTS,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       // Validate BVN against user's details
+      // Validate BVN against user's details
+      const bvnToUse = this.enviroment == 'production' ? bvn : this.testBvn;
       const response = await this.kycProvider.bvnValidate({
-        bvn,
+        bvn: bvnToUse,
         firstName: user.firstName,
         lastName: user.lastName,
         dob: user.dob,
@@ -151,7 +165,7 @@ export class KycService {
       // If BVN validation is successful, approve verification
       if (lastNameStatus && firstNameStatus && dobStatus) {
         const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({
-          bvn,
+          bvn: bvnToUse,
         });
         if (!lookUpResponse || !lookUpResponse.entity) {
           throw new HttpException(
@@ -160,12 +174,7 @@ export class KycService {
           );
         }
 
-        // console.log(lookUpResponse);
-        user.bvnLookup = encrypt(bvn);
-        user.gender = lookUpResponse.entity.gender
-          ? lookUpResponse.entity.gender.toUpperCase()
-          : 'OTHER';
-
+        // Change BVN status to true
         const kyc = await this.kycRepository.getByUserId(userId);
         if (!kyc) {
           await this.kycRepository.createKyc({
@@ -173,13 +182,49 @@ export class KycService {
             bvnStatus: true,
           });
         } else {
-          kyc.bvnStatus = true;
-          // Update user and KYB details
-          await Promise.all([
-            this.userService.update(user.id, user),
-            this.kycRepository.updateKycByUserId(userId, kyc),
-          ]);
+          await this.kycRepository.updateKycByUserId(userId, {
+            bvnStatus: true,
+          });
         }
+
+        // store or update the kyc details
+        const kycDetails = await this.kycRepository.getKycUserDetails(userId);
+        if (kycDetails) {
+          await this.kycRepository.updateKycUserDetailsByUserId(userId, {
+            phoneOne: lookUpResponse.entity.phone_number1,
+            phoneTwo: lookUpResponse.entity.phone_number2,
+            email: toLowerCase(lookUpResponse.entity.email),
+            residentialAddress: lookUpResponse.entity.residential_address,
+            residentialLga: lookUpResponse.entity.lga_of_residence,
+            residentialState: lookUpResponse.entity.state_of_residence,
+            originLga: lookUpResponse.entity.lga_of_origin,
+            originState: lookUpResponse.entity.state_of_origin,
+            title: lookUpResponse.entity.title,
+            maritalStatus: lookUpResponse.entity.marital_status,
+          });
+        } else {
+          await this.kycRepository.createKycUserDetails({
+            user: { connect: { id: user.id } },
+            phoneOne: lookUpResponse.entity.phone_number1,
+            phoneTwo: lookUpResponse.entity.phone_number2,
+            email: toLowerCase(lookUpResponse.entity.email),
+            residentialAddress: lookUpResponse.entity.residential_address,
+            residentialLga: lookUpResponse.entity.lga_of_residence,
+            residentialState: lookUpResponse.entity.state_of_residence,
+            originLga: lookUpResponse.entity.lga_of_origin,
+            originState: lookUpResponse.entity.state_of_origin,
+            title: lookUpResponse.entity.title,
+            maritalStatus: lookUpResponse.entity.marital_status,
+          });
+        }
+
+        // Update user and KYB details
+        await this.userService.update(user.id, {
+          bvnLookup: encrypt(bvn),
+          gender: lookUpResponse.entity.gender
+            ? lookUpResponse.entity.gender.toUpperCase()
+            : 'OTHER',
+        });
         return await this.kycRepository.getByUserId(userId);
       }
 
@@ -547,6 +592,10 @@ export class KycService {
 
   async getKyc(userId: string) {
     return await this.kycRepository.getByUserId(userId);
+  }
+
+  async getKycUserDetails(userId: string) {
+    return await this.kycRepository.getKycUserDetails(userId);
   }
 
   async getManyKycWhereQuery(query: Prisma.KycWhereInput, take: number) {

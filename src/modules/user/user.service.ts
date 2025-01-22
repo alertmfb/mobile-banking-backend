@@ -67,6 +67,10 @@ export class UserService {
     }
   }
 
+  async bvnLookup(str: string) {
+    return await this.userRepository.bvnLookup(str);
+  }
+
   async findOneByEmail(email: string): Promise<User | undefined> {
     return await this.prisma.user.findUnique({
       where: {

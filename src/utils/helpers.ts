@@ -127,3 +127,10 @@ export function ninIsValid(entity: any, user: any): boolean {
 export function compareStrings(str1: string, str2: string): boolean {
   return str1.toLowerCase() === str2.toLowerCase();
 }
+
+export function toLowerCase(str: string) {
+  if (!str) {
+    return str;
+  }
+  return str.toLowerCase();
+}

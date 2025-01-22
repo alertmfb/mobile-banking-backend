@@ -53,6 +53,14 @@ export class UserRepository {
     });
   }
 
+  async bvnLookup(str: string) {
+    return this.prismaService.user.findFirst({
+      where: {
+        bvnLookup: str,
+      },
+    });
+  }
+
   /**
    *  Gets all user in the databse
    *

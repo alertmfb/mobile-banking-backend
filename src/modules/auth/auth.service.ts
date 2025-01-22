@@ -737,7 +737,7 @@ export class AuthService {
   async setNameAndDob(payload: SetNameDobDto): Promise<any> {
     try {
       const { firstName, lastName, otherName, dob, phoneNumber } = payload;
-      const user = await this.userService.findOneByPhoneNumber(phoneNumber);
+      const user = await this.userService.findOneByPhoneOrEmail(phoneNumber);
       if (!user) {
         throw new HttpException(
           ErrorMessages.USER_NOT_FOUND,

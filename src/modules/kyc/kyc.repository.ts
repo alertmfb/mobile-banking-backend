@@ -16,6 +16,26 @@ export class KycRepository {
     });
   }
 
+  async createKycUserDetails(data: Prisma.KycUserDetailsCreateInput) {
+    return this.prismaService.kycUserDetails.create({ data });
+  }
+
+  async getKycUserDetails(userId: string) {
+    return this.prismaService.kycUserDetails.findFirst({
+      where: { userId },
+    });
+  }
+
+  async updateKycUserDetailsByUserId(
+    userId: string,
+    data: Prisma.KycUserDetailsUpdateInput,
+  ) {
+    return this.prismaService.kycUserDetails.update({
+      where: { userId },
+      data,
+    });
+  }
+
   async createResidentialAddress(
     data: Prisma.ResidentialAddressCreateInput,
   ): Promise<ResidentialAddress> {

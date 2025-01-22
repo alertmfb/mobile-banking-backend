@@ -74,7 +74,7 @@ model User {
   dob                String?
   pob                String?
   country            String?
-  phoneNumber        String?               @unique
+  phoneNumber        String?              @unique
   onboardType        OnboardType          @default(NEW)
   onboarding         OnboardEnum          @default(NEW)
   kycStatus          KycEnum              @default(NEW)
@@ -93,12 +93,13 @@ model User {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   ResidentialAddress ResidentialAddress[]
+  SecurityQuestion   SecurityQuestion[]
+  KycUserDetails     KycUserDetails[]
 
   @@index([phoneNumber])
   @@index([email])
   @@index([id])
   @@map("users")
-  SecurityQuestion SecurityQuestion[]
 }
 
 model Account {
@@ -134,21 +135,42 @@ model ResidentialAddress {
 }
 
 model Kyc {
-  id                       String   @id @default(uuid())
-  user                     User     @relation(fields: [userId], references: [id])
-  userId                   String   @unique
-  nationalityStatus        Boolean  @default(false)
-  faceVerifyStatus         Boolean  @default(false)
-  ninStatus                Boolean  @default(false)
-  bvnStatus                Boolean  @default(false)
+  id                          String   @id @default(uuid())
+  user                        User     @relation(fields: [userId], references: [id])
+  userId                      String   @unique
+  nationalityStatus           Boolean  @default(false)
+  faceVerifyStatus            Boolean  @default(false)
+  ninStatus                   Boolean  @default(false)
+  bvnStatus                   Boolean  @default(false)
   residentialAddressSubmitted Boolean  @default(false)
-  residentialAddressStatus Boolean  @default(false)
-  attestation              Boolean  @default(false)
-  accountIssued            Boolean  @default(false)
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
+  residentialAddressStatus    Boolean  @default(false)
+  attestation                 Boolean  @default(false)
+  accountIssued               Boolean  @default(false)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
 
   @@map("kycs")
+}
+
+// this model stores user basic info gotten from bvn
+model KycUserDetails {
+  id                 String   @id @default(uuid())
+  user               User     @relation(fields: [userId], references: [id])
+  userId             String   @unique
+  email              String?
+  phoneOne           String?
+  phoneTwo           String?
+  title              String?
+  maritalStatus      String?
+  residentialAddress String?
+  residentialLga     String?
+  residentialState   String?
+  originLga          String?
+  originState        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("kyc_user_details")
 }
 
 model SecurityQuestion {
@@ -157,7 +179,7 @@ model SecurityQuestion {
   question  String
   answer    String
   user      User     @relation(fields: [userId], references: [id])
-  userId    String   
+  userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -165,8 +187,8 @@ model SecurityQuestion {
 }
 
 model Card {
-  id        String   @id @default(uuid())
-  accountId String
-  cardType  String
+  id           String @id @default(uuid())
+  accountId    String
+  cardType     String
   pickupBranch String
 }

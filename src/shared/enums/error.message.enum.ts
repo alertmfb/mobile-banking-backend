@@ -30,7 +30,7 @@ export enum ErrorMessages {
   COULD_NOT_SEND_OTP = 'Could not send OTP. Try again',
   CANNOT_VERIFY_EMAIL_AGAIN = 'Cannot verify email again',
   EMAIL_MISMATCH = 'Email mismatch',
-  PHONE_IN_USE = 'Phone number in use',
+  PHONE_IN_USE = 'Email Address / Phone number in use',
   BVN_MISMATCH = 'BVN mismatch',
   PHONE_NUMBER_NOT_FOUND = 'Phone number not found',
   PIN_NOT_SET = 'Failed to set pin',
@@ -44,4 +44,5 @@ export enum ErrorMessages {
   USER_BVN_NOT_FOUND = 'User BVN not found',
   USER_ADDRESS_NOT_AVAILABLE = 'User residential address not set',
   CARD_REQUEST_NOT_FOUND = 'Card request not found',
+  BVN_ALREADY_EXISTS = 'BVN has already been used by another user',
 }

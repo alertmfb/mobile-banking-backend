@@ -80,8 +80,9 @@ export class AccountService {
       }
 
       const kyc = await this.kycService.getKyc(userId);
+      const kycDetails = await this.kycService.getKycUserDetails(userId);
 
-      if (!kyc) {
+      if (!kyc || !kycDetails) {
         if (background) {
           return;
         } else {
@@ -104,21 +105,6 @@ export class AccountService {
         );
       }
 
-      // check if user has added residential address
-      const residentialAdress =
-        await this.kycService.getResidentialAddress(userId);
-
-      if (!residentialAdress) {
-        if (background) {
-          return;
-        } else {
-          throw new HttpException(
-            ErrorMessages.USER_ADDRESS_NOT_AVAILABLE,
-            HttpStatus.NOT_FOUND,
-          );
-        }
-      }
-
       if (!user.bvnLookup) {
         if (background) {
           return;
@@ -130,13 +116,24 @@ export class AccountService {
         }
       }
 
+      // check if user has added residential address
+      const residentialAdress =
+        await this.kycService.getResidentialAddress(userId);
+
+      const email = user.email || kycDetails.email;
+      const phone =
+        user.phoneNumber || kycDetails.phoneOne || kycDetails.phoneTwo;
+      const address = residentialAdress
+        ? `${residentialAdress.address}, ${residentialAdress.city}, ${residentialAdress.state}`
+        : `${kycDetails.residentialAddress}, ${kycDetails.residentialLga}, ${kycDetails.residentialState}`;
       //check if names, email, phone number, dob is set
       if (
         !user.firstName ||
         !user.lastName ||
-        !user.email ||
-        !user.phoneNumber ||
-        !user.dob
+        !email ||
+        !phone ||
+        !user.dob ||
+        !address
       ) {
         if (background) {
           return;
@@ -161,14 +158,10 @@ export class AccountService {
         PlaceOfBirth: user.pob,
         DateOfBirth: user.dob,
         PhoneNo: user.phoneNumber,
-        Address: `${residentialAdress.address}, ${residentialAdress.city}, ${residentialAdress.state}`,
+        Address: address,
         Email: user.email,
       };
 
-      console.log('Creating account...', data);
-
-      // console.log('Creating account...', data);
-      console.log('ky', this.headers);
       const response = await lastValueFrom(
         this.httpService.post(
           `${this.coreBankingUrl}/accounts/create-account`,
@@ -178,8 +171,6 @@ export class AccountService {
           },
         ),
       );
-
-      console.log('Response', response.data);
 
       if (!response || !response.data || !response.data.IsSuccessful) {
         throw new HttpException(
@@ -342,7 +333,7 @@ export class AccountService {
   }
 
   //Bank One Endpoints for Transactions
-  async generateStatementApi(query: GenerateStatementQueryDto){
+  async generateStatementApi(query: GenerateStatementQueryDto) {
     try {
       const response = await lastValueFrom(
         this.httpService.get(
@@ -437,7 +428,6 @@ export class AccountService {
       const kycs = await this.kycService.getManyKycWhereQuery(
         {
           bvnStatus: true,
-          residentialAddressSubmitted: true,
           accountIssued: false,
         },
         5,
