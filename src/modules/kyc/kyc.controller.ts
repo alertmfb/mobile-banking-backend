@@ -63,7 +63,7 @@ export class KycController {
       const userId = user.id;
       const response = await this.kybService.retrieveBvnDetails(userId);
       return new SuccessResponseDto(
-        SuccessMessage.BVN_DETAILS_FETCHED,
+        SuccessMessage.BVN_DETAILS_RETRIEVED,
         response,
       );
     } catch (e) {
@@ -170,7 +170,7 @@ export class KycController {
     try {
       const userId = user.id;
       const response = await this.kybService.getKyc(userId);
-      return new SuccessResponseDto(SuccessMessage.KYB_FETCHED, response);
+      return new SuccessResponseDto(SuccessMessage.KYB_RETRIEVED, response);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

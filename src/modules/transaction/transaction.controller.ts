@@ -25,7 +25,7 @@ export class TransactionController {
     try {
       const resObj = await this.transactionService.getTransactions(payload);
       return new SuccessResponseDto(
-        SuccessMessage.TRANSACTIONS_FETCHED,
+        SuccessMessage.TRANSACTIONS_RETRIEVED,
         resObj,
       );
     } catch (err) {
@@ -38,7 +38,7 @@ export class TransactionController {
   async fetchBanks() {
     try {
       const resObj = await this.transactionService.fetchBanks();
-      return new SuccessResponseDto(SuccessMessage.BANKS_FETCHED, resObj);
+      return new SuccessResponseDto(SuccessMessage.BANKS_RETRIEVED, resObj);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -82,7 +82,7 @@ export class TransactionController {
   async getFee(@Query('amount') amount: number) {
     try {
       const resObj = await this.transactionService.getFee(amount);
-      return new SuccessResponseDto(SuccessMessage.FEE_FETCHED, resObj);
+      return new SuccessResponseDto(SuccessMessage.FEE_RETRIEVED, resObj);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

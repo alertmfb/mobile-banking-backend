@@ -80,7 +80,7 @@ export class AccountController {
         payload,
       );
       return new SuccessResponseDto(
-        SuccessMessage.TRANSACTIONS_FETCHED,
+        SuccessMessage.TRANSACTIONS_RETRIEVED,
         resObj,
       );
     } catch (error) {

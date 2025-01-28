@@ -324,7 +324,7 @@ export class KycService {
         );
       }
 
-      // Update user with fetched details
+      // Update user with retrieved details
       const { first_name, last_name, date_of_birth, middle_name, gender } =
         lookUpResponse.entity;
       user.firstName = first_name;

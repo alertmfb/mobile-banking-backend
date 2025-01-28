@@ -5,6 +5,12 @@ import { SetPasscodeDto } from '../auth/dto/set-passcode.dto';
 import { SetPinDto } from '../auth/dto/set-pin.dto';
 import { Prisma, User } from '@prisma/client';
 import { ErrorMessages } from 'src/shared/enums/error.message.enum';
+import * as bcrypt from 'bcrypt';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { SetPhoneDto } from './dto/set-phone.dto';
+import { VerifyPhoneDto } from './dto/verify-phone.dto';
+import { ChangePasscodeDto } from './dto/change-passcode.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @Injectable()
 export class UserService {
@@ -181,5 +187,276 @@ export class UserService {
 
   async setPin(id: string, payload: SetPinDto) {
     return { id, ...payload };
+  }
+
+  async verifyEmail(id: string, payload: VerifyEmailDto) {
+    try {
+      const { email, otp } = payload;
+      const user = await this.userRepository.findById(id);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (user.isEmailSet) {
+        throw new HttpException(
+          ErrorMessages.CANNOT_VERIFY_EMAIL_AGAIN,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (!user.emailToken || decrypt(user.emailToken) !== email) {
+        throw new HttpException(
+          ErrorMessages.EMAIL_MISMATCH,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (user.otp !== otp) {
+        throw new HttpException(
+          ErrorMessages.INVALID_OTP,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (new Date() > user.otpExpires) {
+        throw new HttpException(
+          ErrorMessages.INVALID_OTP,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      await this.userRepository.update(id, {
+        isEmailSet: true,
+        otp: null,
+        otpExpires: null,
+        email: email,
+        emailToken: null,
+      });
+
+      return;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async setPhone(id: string, payload: SetPhoneDto) {
+    try {
+      const { phoneNumber } = payload;
+      const user = await this.userRepository.findById(id);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (user.isPhoneSet || user.phoneNumber) {
+        throw new HttpException(
+          ErrorMessages.PHONE_EXIST,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const phoneExist =
+        await this.userRepository.findOneByPhoneNumber(phoneNumber);
+      if (phoneExist) {
+        throw new HttpException(
+          ErrorMessages.PHONE_EXIST,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      const otpExpire = new Date(new Date().getTime() + 60 * 60 * 1000);
+      const message = `Your verification code is ${otp}. Valid for 1 hour`;
+
+      const response = await this.messagingService.sendSms(
+        toSmsNo(phoneNumber),
+        message,
+      );
+
+      await this.messagingService.sendWhatsapp(
+        toSmsNo(phoneNumber),
+        otp.toString(),
+      );
+
+      if (!response) {
+        throw new HttpException(
+          ErrorMessages.COULD_NOT_SEND_OTP,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      await this.userRepository.update(id, {
+        phoneToken: encrypt(phoneNumber),
+        otp: otp.toString(),
+        otpExpires: otpExpire,
+      });
+
+      return { otp, otpExpire };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async verifyPhone(id: string, payload: VerifyPhoneDto) {
+    try {
+      const { phoneNumber, otp } = payload;
+      const user = await this.userRepository.findById(id);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (user.isPhoneSet) {
+        throw new HttpException(
+          ErrorMessages.PHONE_EXIST,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (!user.phoneToken || decrypt(user.phoneToken) !== phoneNumber) {
+        throw new HttpException(
+          ErrorMessages.PHONE_NUMBER_NOT_FOUND,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (user.otp !== otp) {
+        throw new HttpException(
+          ErrorMessages.INVALID_OTP,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (new Date() > user.otpExpires) {
+        throw new HttpException(
+          ErrorMessages.INVALID_OTP,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      await this.userRepository.update(id, {
+        isPhoneSet: true,
+        otp: null,
+        otpExpires: null,
+        phoneNumber: phoneNumber,
+        phoneToken: null,
+      });
+
+      return;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async verifyOtp(id: string, payload: VerifyOtpDto) {
+    try {
+      const { otp } = payload;
+      const user = await this.userRepository.findById(id);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (user.otp !== otp) {
+        throw new HttpException(
+          ErrorMessages.INVALID_OTP,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (new Date() > user.otpExpires) {
+        throw new HttpException(
+          ErrorMessages.INVALID_OTP,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async requestPasscodeChange(id: string) {
+    try {
+      const user = await this.userRepository.findById(id);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (!user.isEmailSet || !user.email) {
+        throw new HttpException(
+          ErrorMessages.EMAIL_MUST_BE_VERIFIED,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      const otpExpire = new Date(new Date().getTime() + 60 * 60 * 1000);
+
+      const response = await this.messagingService.sendEmailToken({
+        email_address: user.email,
+        code: otp,
+      });
+
+      if (response.status === 'error') {
+        throw new HttpException(
+          ErrorMessages.EMAIL_NOT_SENT + '. ' + response.message,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      await this.userRepository.update(id, {
+        otp: otp.toString(),
+        otpExpires: otpExpire,
+      });
+
+      return { otp, otpExpire };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async changePasscode(id: string, payload: ChangePasscodeDto) {
+    try {
+      const { otp, passcode, confirmPasscode } = payload;
+      const user = await this.userRepository.findById(id);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (passcode !== confirmPasscode) {
+        throw new HttpException(
+          ErrorMessages.PASSWORDS_DO_NOT_MATCH,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      await this.verifyOtp(id, { otp });
+
+      await this.userRepository.update(id, {
+        passcode: await bcrypt.hash(passcode.toString(), 10),
+        otp: null,
+        otpExpires: null,
+      });
+
+      return;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
