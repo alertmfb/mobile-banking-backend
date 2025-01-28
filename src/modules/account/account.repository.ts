@@ -25,4 +25,10 @@ export class AccountRepository {
       where: { accountNumber },
     });
   }
+
+  async getOneById(id: string) {
+    return this.prismaService.account.findUnique({
+      where: { id },
+    });
+  }
 }

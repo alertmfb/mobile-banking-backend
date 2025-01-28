@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRepository } from './user.repository';
 import { SetPasscodeDto } from '../auth/dto/set-passcode.dto';
@@ -11,11 +11,15 @@ import { SetPhoneDto } from './dto/set-phone.dto';
 import { VerifyPhoneDto } from './dto/verify-phone.dto';
 import { ChangePasscodeDto } from './dto/change-passcode.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { decrypt, encrypt, toSmsNo } from 'src/utils/helpers';
+import { MessagingService } from '../messaging/messaging-service.interface';
 
 @Injectable()
 export class UserService {
   private SALT = 10;
   constructor(
+    @Inject('MessagingProvider')
+    private readonly messagingService: MessagingService,
     private prisma: PrismaService,
     private readonly userRepository: UserRepository,
   ) {}
@@ -113,6 +117,11 @@ export class UserService {
         ninLookup: true,
         createdAt: true,
         updatedAt: true,
+        phoneToken: true,
+        emailToken: true,
+        isEmailSet: true,
+        isPhoneSet: true,
+        isPinSet: true,
       },
     });
   }
@@ -153,6 +162,11 @@ export class UserService {
         isDeleted: true,
         createdAt: true,
         updatedAt: true,
+        phoneToken: true,
+        emailToken: true,
+        isEmailSet: true,
+        isPhoneSet: true,
+        isPinSet: true,
       },
     });
   }

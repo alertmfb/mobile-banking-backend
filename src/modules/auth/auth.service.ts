@@ -747,7 +747,7 @@ export class AuthService {
       const validOnboardingStates = ['PHONE_VERIFIED', 'EMAIL_VERIFIED'];
       if (!validOnboardingStates.includes(user.onboarding)) {
         throw new HttpException(
-          ErrorMessages.EMAIL_MUST_VERIFIED,
+          ErrorMessages.EMAIL_MUST_BE_VERIFIED,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -784,7 +784,7 @@ export class AuthService {
       const validOnboardingStates = ['PHONE_VERIFIED', 'EMAIL_VERIFIED'];
       if (!validOnboardingStates.includes(user.onboarding)) {
         throw new HttpException(
-          ErrorMessages.EMAIL_MUST_VERIFIED,
+          ErrorMessages.EMAIL_MUST_BE_VERIFIED,
           HttpStatus.BAD_REQUEST,
         );
       }

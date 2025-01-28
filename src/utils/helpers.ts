@@ -3,7 +3,7 @@ const secretKey = 'qUDjZ5HZ5XHiGLpM8S7jcRo0oa6GIds_';
 const iv = crypto.randomBytes(16);
 
 export function toSmsNo(phone: string): string {
-  const startsArr = ['081', '080', '070', '071', '090', '091'];
+  const startsArr = ['081', '080', '070', '071', '090', '091', '91'];
   const formattedPhone = phone;
 
   if (phone.startsWith('234')) {
@@ -133,4 +133,10 @@ export function toLowerCase(str: string) {
     return str;
   }
   return str.toLowerCase();
+}
+
+export function generateTransactionReference(): string {
+  const timestamp = Date.now().toString();
+  const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return (timestamp + randomString).substring(0, 12).toUpperCase();
 }

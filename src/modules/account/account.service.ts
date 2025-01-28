@@ -45,6 +45,10 @@ export class AccountService {
     this.accountCreationRunning = false;
   }
 
+  async findOne(id: string) {
+    return this.accountRepository.getOneById(id);
+  }
+
   async storeAccount(account: Prisma.AccountCreateInput) {
     return this.accountRepository.create(account);
   }
@@ -157,9 +161,9 @@ export class AccountService {
         OtherNames: user.otherName,
         PlaceOfBirth: user.pob,
         DateOfBirth: user.dob,
-        PhoneNo: user.phoneNumber,
+        PhoneNo: phone,
         Address: address,
-        Email: user.email,
+        Email: email,
       };
 
       const response = await lastValueFrom(
@@ -270,6 +274,7 @@ export class AccountService {
         );
       }
       const response = await this.balanceEnquiryApi(account.accountNumber);
+      return response;
       console.log('Response', response);
       return plainToClass(AccountBalanceResponseDto, response);
     } catch (e) {

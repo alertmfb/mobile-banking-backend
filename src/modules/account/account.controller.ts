@@ -32,7 +32,7 @@ export class AccountController {
       const userId = user.id;
       const resObj = await this.accountService.getUserAccount(userId);
       return new SuccessResponseDto(
-        SuccessMessage.ACCOUNT_DETAILS_RETRIVED,
+        SuccessMessage.ACCOUNT_DETAILS_RETRIEVED,
         resObj,
       );
     } catch (error) {
@@ -47,7 +47,7 @@ export class AccountController {
       const userId = user.id;
       const resObj = await this.accountService.getAccountBalance(userId);
       return new SuccessResponseDto(
-        SuccessMessage.ACCOUNT_BALANCE_RETRIVED,
+        SuccessMessage.ACCOUNT_BALANCE_RETRIEVED,
         resObj,
       );
     } catch (error) {

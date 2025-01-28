@@ -59,6 +59,90 @@ enum AddressVerificationStatus {
   FAILED
 }
 
+enum TransactionType {
+  TRANSFER
+  AIRTIME
+  DATA
+  TV_BILL
+  ELECTRICITY
+  BETTING
+  PENSION
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REVERSED
+}
+
+enum ActivityType {
+  TRANSFER
+  AIRTIME
+  DATA
+  TV_BILL
+  ELECTRICITY
+  BETTING
+  PENSION
+  CREATE_TRANSFER_BENEFICIARY
+  CREATE_AIRTIME_BENEFICIARY
+  CREATE_DATA_BENEFICIARY
+  CREATE_TV_BILL_BENEFICIARY
+  CREATE_ELECTRICITY_BENEFICIARY
+  BULK_CREATE_BENEFICIARY
+  BULK_AIRTIME
+  BULK_DATA
+}
+
+enum ActivityStatus {
+  VIEW
+  INITIATE
+  AUTHORIZE
+  REJECT
+}
+
+enum CardType {
+  VISA
+  MASTERCARD
+  VERVE
+}
+
+enum PickupBranch {
+  YABA
+  IKEJA
+  VI
+  TRADEFAIR
+  IKORODU
+}
+
+enum CardRequestStatus {
+  RECEIVED
+  PROCESSING
+  PRINTING
+  READY
+  DELIVERED
+  CANCELLED
+  SENT
+}
+
+enum CardDeliveryOption {
+  PICKUP
+  DELIVERY
+}
+
+enum NetworkProvider {
+  MTN
+  GLO
+  AIRTEL
+  NINE_MOBILE
+}
+
+enum TvProvider {
+  DSTV
+  GOTV
+  STARTIMES
+}
+
 model User {
   id                 String               @id @default(uuid())
   email              String?              @unique
@@ -89,12 +173,21 @@ model User {
   otp                String?
   otpExpires         DateTime?
   otpId              String?
+  phoneToken         String?              @db.Text
+  emailToken         String?              @db.Text
+  isEmailSet         Boolean              @default(false)
+  isPhoneSet         Boolean              @default(false)
+  isPinSet           Boolean              @default(false)
   isDeleted          Boolean              @default(false)
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   ResidentialAddress ResidentialAddress[]
   SecurityQuestion   SecurityQuestion[]
   KycUserDetails     KycUserDetails[]
+  Transaction        Transaction[]
+  TransactionLimit   TransactionLimit[]
+  Beneficiary        Beneficiary[]
+  CardRequest        CardRequest[]
 
   @@index([phoneNumber])
   @@index([email])
@@ -112,6 +205,9 @@ model Account {
   provider      AccountProviderEnum @default(BANKONE)
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
+  Transaction   Transaction[]
+  Beneficiary   Beneficiary[]
+  CardRequest   CardRequest[]
 
   @@map("accounts")
 }
@@ -186,9 +282,90 @@ model SecurityQuestion {
   @@map("security_questions")
 }
 
-model Card {
-  id           String @id @default(uuid())
-  accountId    String
-  cardType     String
-  pickupBranch String
+model CardRequest {
+  id             String             @id @default(uuid())
+  user           User               @relation(fields: [userId], references: [id])
+  userId         String
+  account        Account            @relation(fields: [accountId], references: [id])
+  accountId      String
+  deliveryOption CardDeliveryOption @default(PICKUP)
+  cardType       CardType           @default(VERVE)
+  pickupBranch   PickupBranch       @default(YABA)
+  address        String?
+  city           String?
+  zipCode        String?
+  status         CardRequestStatus  @default(RECEIVED)
+  paid           Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([userId])
+  @@map("card_requests")
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  account         Account           @relation(fields: [accountId], references: [id])
+  accountId       String
+  user            User              @relation(fields: [userId], references: [id])
+  userId          String
+  beneficiary     Beneficiary?      @relation(fields: [beneficiaryId], references: [id])
+  beneficiaryId   String?
+  transactionType TransactionType   @default(TRANSFER)
+  amount          Decimal           @db.Decimal(10, 2)
+  newBalance      Decimal           @db.Decimal(10, 2)
+  reference       String?
+  narration       String?
+  status          TransactionStatus @default(PENDING)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  metadata        Json?
+
+  @@index([accountId])
+  @@index([transactionType])
+  @@index([userId])
+  @@index([id])
+  @@index([reference])
+  @@map("transactions")
+}
+
+model TransactionLimit {
+  id              String          @id @default(uuid())
+  user            User            @relation(fields: [userId], references: [id])
+  userId          String
+  transactionType TransactionType @default(TRANSFER)
+  singleLimit     Decimal?        @db.Decimal(10, 2)
+  dailyLimit      Decimal?        @db.Decimal(10, 2)
+  monthlyLimit    Decimal?        @db.Decimal(10, 2)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([transactionType])
+  @@map("transaction_limits")
+}
+
+model Beneficiary {
+  id              String           @id @default(uuid())
+  user            User             @relation(fields: [userId], references: [id])
+  userId          String
+  account         Account?         @relation(fields: [accountId], references: [id])
+  accountId       String?
+  beneficiaryType TransactionType  @default(TRANSFER)
+  accountName     String?
+  bankName        String?
+  bankCode        String?
+  accountNumber   String?
+  tvCardNumber    String?
+  tvCardName      String?
+  tvProvider      TvProvider?
+  phoneNumber     String?
+  networkProvider NetworkProvider?
+  isBeneficiary   Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  Transaction     Transaction[]
+
+  @@index([userId])
+  @@map("beneficiary")
 }

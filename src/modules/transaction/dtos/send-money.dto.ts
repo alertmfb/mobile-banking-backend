@@ -27,7 +27,6 @@ export class SendMoneyDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Length(3, 3, { message: 'Bank code must be exactly 3 characters long' })
   bankCode: string;
 
   @ApiProperty({
