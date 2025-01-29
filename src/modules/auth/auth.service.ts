@@ -18,6 +18,7 @@ import { VerifyEmailOtpDto } from './dto/verify-email-otp.dto';
 import {
   convertBankOneDateToStandardFormat,
   encrypt,
+  obfuscateEmail,
   obfuscatePhoneNumber,
   toSmsNo,
 } from 'src/utils/helpers';
@@ -310,14 +311,23 @@ export class AuthService {
 
         await this.userService.update(user.id, user);
 
-        const otpResponse = await this.messagingService.sendSms(
-          toSmsNo(user.phoneNumber),
-          message,
-        );
-        await this.messagingService.sendWhatsapp(
-          toSmsNo(user.phoneNumber),
-          otp.toString(),
-        );
+        let otpResponse;
+
+        if (user.phoneNumber) {
+          otpResponse = await this.messagingService.sendSms(
+            toSmsNo(user.phoneNumber),
+            message,
+          );
+          await this.messagingService.sendWhatsapp(
+            toSmsNo(user.phoneNumber),
+            otp.toString(),
+          );
+        } else if (user.email) {
+          otpResponse = await this.messagingService.sendEmailToken({
+            email_address: user.email,
+            code: otp,
+          });
+        }
         if (!otpResponse) {
           throw new HttpException(
             ErrorMessages.COULD_NOT_SEND_OTP,
@@ -325,14 +335,17 @@ export class AuthService {
           );
         }
 
-        return {
-          message: `We have sent an OTP to ${obfuscatePhoneNumber(user.phoneNumber)}. Valid for 1 hour`,
-          otp: otp,
-          name: `${user.firstName || ''} ${user.otherName || ''} ${user.lastName || ''}`
-            .toUpperCase()
-            .replace(/,/g, ''),
-          phoneNumber: user.phoneNumber,
-        };
+        if (user.phoneNumber) {
+          return {
+            message: `We have sent an OTP to ${obfuscatePhoneNumber(user.phoneNumber)}. Valid for 1 hour`,
+            otp: otp,
+          };
+        } else {
+          return {
+            message: `We have sent an OTP to ${obfuscateEmail(user.email)}. Valid for 1 hour`,
+            otp: otp,
+          };
+        }
       }
 
       // If account does not exist, fetch account details
@@ -348,23 +361,34 @@ export class AuthService {
       const { customerID, BVN, dateOfBirth, gender, phoneNumber, email, name } =
         response;
 
-      // Validate phone number existence
-      const phoneExist =
-        await this.userService.findOneByPhoneNumber(phoneNumber);
-      if (phoneExist) {
+      if (!phoneNumber && !email) {
         throw new HttpException(
-          ErrorMessages.USER_EXIST,
+          ErrorMessages.NO_CONTACT_INFO_ON_ACCOUNT,
           HttpStatus.BAD_REQUEST,
         );
       }
 
+      // Validate phone number existence
+      if (phoneNumber) {
+        const phoneExist =
+          await this.userService.findOneByPhoneNumber(phoneNumber);
+        if (phoneExist) {
+          throw new HttpException(
+            ErrorMessages.USER_EXIST,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
       // Validate email existence
-      const emailExist = await this.userService.findOneByEmail(email);
-      if (emailExist) {
-        throw new HttpException(
-          ErrorMessages.USER_EXIST,
-          HttpStatus.BAD_REQUEST,
-        );
+      if (email) {
+        const emailExist = await this.userService.findOneByEmail(email);
+        if (emailExist) {
+          throw new HttpException(
+            ErrorMessages.USER_EXIST,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
       }
 
       // Split and clean the name
@@ -377,6 +401,8 @@ export class AuthService {
         gender: gender.toUpperCase(),
         dob: convertBankOneDateToStandardFormat(dateOfBirth),
         email,
+        isEmailSet: !!email,
+        isPhoneSet: !!phoneNumber,
         firstName: nameToUse[0],
         lastName: nameToUse[1],
         otherName: nameToUse[2] || null,
@@ -395,15 +421,26 @@ export class AuthService {
         user: { connect: { id: newUser.id } },
       });
 
-      // Send OTP to the user's phone number
-      const otpResponse = await this.messagingService.sendSms(
-        toSmsNo(phoneNumber),
-        message,
-      );
-      await this.messagingService.sendWhatsapp(
-        toSmsNo(phoneNumber),
-        otp.toString(),
-      );
+      let otpResponse;
+
+      if (phoneNumber) {
+        // Send OTP to the user's phone number
+        otpResponse = await this.messagingService.sendSms(
+          toSmsNo(phoneNumber),
+          message,
+        );
+        // Send OTP to the user's whatsapp number
+        await this.messagingService.sendWhatsapp(
+          toSmsNo(phoneNumber),
+          otp.toString(),
+        );
+      } else if (email) {
+        // Send OTP to the user's email
+        otpResponse = await this.messagingService.sendEmailToken({
+          email_address: email,
+          code: otp,
+        });
+      }
       if (!otpResponse) {
         throw new HttpException(
           ErrorMessages.COULD_NOT_SEND_OTP,
@@ -411,14 +448,17 @@ export class AuthService {
         );
       }
 
-      return {
-        message: `We have sent an OTP to ${obfuscatePhoneNumber(phoneNumber)}. Valid for 1 hour`,
-        otp: otp,
-        name: `${nameToUse[0] || ''} ${nameToUse[1] || ''} ${nameToUse[2] || ''}`
-          .toUpperCase()
-          .replace(/,/g, ''),
-        phoneNumber,
-      };
+      if (phoneNumber) {
+        return {
+          message: `We have sent an OTP to ${obfuscatePhoneNumber(phoneNumber)}. Valid for 1 hour`,
+          otp: otp,
+        };
+      } else {
+        return {
+          message: `We have sent an OTP to ${obfuscateEmail(email)}. Valid for 1 hour`,
+          otp: otp,
+        };
+      }
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);

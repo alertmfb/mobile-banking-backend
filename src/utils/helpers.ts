@@ -34,6 +34,19 @@ export const obfuscatePhoneNumber = (phone: string): string => {
   return phone;
 };
 
+export const obfuscateString = (str: string): string => {
+  if (str.length <= 2) {
+    return `${str[0]}*`;
+  }
+  return `${str[0]}${'*'.repeat(str.length - 2)}${str.slice(-1)}`;
+};
+
+export const obfuscateEmail = (email: string): string => {
+  const [username, domain] = email.split('@');
+  const obfuscatedUsername = obfuscateString(username);
+  return `${obfuscatedUsername}@${domain}`;
+};
+
 export function encrypt(text: string): string {
   const cipher = crypto.createCipheriv(
     'aes-256-cbc',
