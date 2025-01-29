@@ -337,21 +337,23 @@ export class AuthService {
 
         if (user.phoneNumber) {
           return {
+            phoneNumber: user.phoneNumber,
+            email: null,
             message: `We have sent an OTP to ${obfuscatePhoneNumber(user.phoneNumber)}. Valid for 1 hour`,
             otp: otp,
-            name: `${user.firstName} ${user.lastName} ${user.otherName}`.replace(
-              /\s+$/,
-              '',
-            ),
+            name: `${user.firstName} ${user.lastName} ${user.otherName || ''}`
+              .toUpperCase()
+              .replace(/\s+$/, ''),
           };
         } else {
           return {
+            email: user.email,
+            phoneNumber: null,
             message: `We have sent an OTP to ${obfuscateEmail(user.email)}. Valid for 1 hour`,
             otp: otp,
-            name: `${user.firstName} ${user.lastName} ${user.otherName}`.replace(
-              /\s+$/,
-              '',
-            ),
+            name: `${user.firstName} ${user.lastName} ${user.otherName || ''}`
+              .toUpperCase()
+              .replace(/\s+$/, ''),
           };
         }
       }
