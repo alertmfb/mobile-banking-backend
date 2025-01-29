@@ -530,6 +530,12 @@ export class AuthService {
         );
       }
 
+      if (phoneNumber.includes('@')) {
+        user.isEmailSet = true;
+      } else {
+        user.isPhoneSet = true;
+      }
+
       // update user onboarding status
       user.onboarding = 'PHONE_VERIFIED';
       await this.userService.update(user.id, user);

@@ -163,70 +163,70 @@ export class KycService {
       const dobStatus = date_of_birth?.status;
 
       // If BVN validation is successful, approve verification
-      if (lastNameStatus && firstNameStatus && dobStatus) {
-        const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({
-          bvn: bvnToUse,
-        });
-        if (!lookUpResponse || !lookUpResponse.entity) {
-          throw new HttpException(
-            ErrorMessages.COULD_NOT_VERIFY_BVN,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+      // if (lastNameStatus && firstNameStatus && dobStatus) {
+      //   const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({
+      //     bvn: bvnToUse,
+      //   });
+      //   if (!lookUpResponse || !lookUpResponse.entity) {
+      //     throw new HttpException(
+      //       ErrorMessages.COULD_NOT_VERIFY_BVN,
+      //       HttpStatus.BAD_REQUEST,
+      //     );
+      //   }
 
-        // Change BVN status to true
-        const kyc = await this.kycRepository.getByUserId(userId);
-        if (!kyc) {
-          await this.kycRepository.createKyc({
-            user: { connect: { id: user.id } },
-            bvnStatus: true,
-          });
-        } else {
-          await this.kycRepository.updateKycByUserId(userId, {
-            bvnStatus: true,
-          });
-        }
+      //   // Change BVN status to true
+      //   const kyc = await this.kycRepository.getByUserId(userId);
+      //   if (!kyc) {
+      //     await this.kycRepository.createKyc({
+      //       user: { connect: { id: user.id } },
+      //       bvnStatus: true,
+      //     });
+      //   } else {
+      //     await this.kycRepository.updateKycByUserId(userId, {
+      //       bvnStatus: true,
+      //     });
+      //   }
 
-        // store or update the kyc details
-        const kycDetails = await this.kycRepository.getKycUserDetails(userId);
-        if (kycDetails) {
-          await this.kycRepository.updateKycUserDetailsByUserId(userId, {
-            phoneOne: lookUpResponse.entity.phone_number1,
-            phoneTwo: lookUpResponse.entity.phone_number2,
-            email: toLowerCase(lookUpResponse.entity.email),
-            residentialAddress: lookUpResponse.entity.residential_address,
-            residentialLga: lookUpResponse.entity.lga_of_residence,
-            residentialState: lookUpResponse.entity.state_of_residence,
-            originLga: lookUpResponse.entity.lga_of_origin,
-            originState: lookUpResponse.entity.state_of_origin,
-            title: lookUpResponse.entity.title,
-            maritalStatus: lookUpResponse.entity.marital_status,
-          });
-        } else {
-          await this.kycRepository.createKycUserDetails({
-            user: { connect: { id: user.id } },
-            phoneOne: lookUpResponse.entity.phone_number1,
-            phoneTwo: lookUpResponse.entity.phone_number2,
-            email: toLowerCase(lookUpResponse.entity.email),
-            residentialAddress: lookUpResponse.entity.residential_address,
-            residentialLga: lookUpResponse.entity.lga_of_residence,
-            residentialState: lookUpResponse.entity.state_of_residence,
-            originLga: lookUpResponse.entity.lga_of_origin,
-            originState: lookUpResponse.entity.state_of_origin,
-            title: lookUpResponse.entity.title,
-            maritalStatus: lookUpResponse.entity.marital_status,
-          });
-        }
+      //   // store or update the kyc details
+      //   const kycDetails = await this.kycRepository.getKycUserDetails(userId);
+      //   if (kycDetails) {
+      //     await this.kycRepository.updateKycUserDetailsByUserId(userId, {
+      //       phoneOne: lookUpResponse.entity.phone_number1,
+      //       phoneTwo: lookUpResponse.entity.phone_number2,
+      //       email: toLowerCase(lookUpResponse.entity.email),
+      //       residentialAddress: lookUpResponse.entity.residential_address,
+      //       residentialLga: lookUpResponse.entity.lga_of_residence,
+      //       residentialState: lookUpResponse.entity.state_of_residence,
+      //       originLga: lookUpResponse.entity.lga_of_origin,
+      //       originState: lookUpResponse.entity.state_of_origin,
+      //       title: lookUpResponse.entity.title,
+      //       maritalStatus: lookUpResponse.entity.marital_status,
+      //     });
+      //   } else {
+      //     await this.kycRepository.createKycUserDetails({
+      //       user: { connect: { id: user.id } },
+      //       phoneOne: lookUpResponse.entity.phone_number1,
+      //       phoneTwo: lookUpResponse.entity.phone_number2,
+      //       email: toLowerCase(lookUpResponse.entity.email),
+      //       residentialAddress: lookUpResponse.entity.residential_address,
+      //       residentialLga: lookUpResponse.entity.lga_of_residence,
+      //       residentialState: lookUpResponse.entity.state_of_residence,
+      //       originLga: lookUpResponse.entity.lga_of_origin,
+      //       originState: lookUpResponse.entity.state_of_origin,
+      //       title: lookUpResponse.entity.title,
+      //       maritalStatus: lookUpResponse.entity.marital_status,
+      //     });
+      //   }
 
-        // Update user and KYB details
-        await this.userService.update(user.id, {
-          bvnLookup: encrypt(bvn),
-          gender: lookUpResponse.entity.gender
-            ? lookUpResponse.entity.gender.toUpperCase()
-            : 'OTHER',
-        });
-        return await this.kycRepository.getByUserId(userId);
-      }
+      //   // Update user and KYB details
+      //   await this.userService.update(user.id, {
+      //     bvnLookup: encrypt(bvn),
+      //     gender: lookUpResponse.entity.gender
+      //       ? lookUpResponse.entity.gender.toUpperCase()
+      //       : 'OTHER',
+      //   });
+      //   return await this.kycRepository.getByUserId(userId);
+      // }
 
       // Send OTP for further BVN verification
       const lookupResponse = await this.kycProvider.bvnLookupAdvanced({ bvn });
