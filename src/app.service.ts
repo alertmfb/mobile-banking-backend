@@ -15,8 +15,13 @@ export class AppService {
       await Promise.all([
         this.prismaService.residentialAddress.deleteMany(),
         this.prismaService.kyc.deleteMany(),
+        this.prismaService.kycUserDetails.deleteMany(),
         this.prismaService.account.deleteMany(),
-        this.prismaService.securityQuestion.deleteMany(),
+        this.prismaService.residentialAddress.deleteMany(),
+        this.prismaService.beneficiary.deleteMany(),
+        this.prismaService.cardRequest.deleteMany(),
+        this.prismaService.transaction.deleteMany(),
+        this.prismaService.transactionLimit.deleteMany(),
         this.prismaService.user.deleteMany(),
       ]);
       //
