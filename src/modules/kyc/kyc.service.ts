@@ -22,7 +22,6 @@ import {
   obfuscatePhoneNumber,
   formatBvnDate,
   ninIsValid,
-  toLowerCase,
 } from 'src/utils/helpers';
 import { MessagingService } from '../messaging/messaging-service.interface';
 import { ConfigService } from '@nestjs/config';
@@ -229,7 +228,9 @@ export class KycService {
       // }
 
       // Send OTP for further BVN verification
-      const lookupResponse = await this.kycProvider.bvnLookupAdvanced({ bvn });
+      const lookupResponse = await this.kycProvider.bvnLookupAdvanced({
+        bvn: bvnToUse,
+      });
       const bvnPhone = lookupResponse?.entity?.phone_number1;
       const bvnEmail = lookupResponse?.entity?.email;
 
