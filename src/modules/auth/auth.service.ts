@@ -339,11 +339,19 @@ export class AuthService {
           return {
             message: `We have sent an OTP to ${obfuscatePhoneNumber(user.phoneNumber)}. Valid for 1 hour`,
             otp: otp,
+            name: `${user.firstName} ${user.lastName} ${user.otherName}`.replace(
+              /\s+$/,
+              '',
+            ),
           };
         } else {
           return {
             message: `We have sent an OTP to ${obfuscateEmail(user.email)}. Valid for 1 hour`,
             otp: otp,
+            name: `${user.firstName} ${user.lastName} ${user.otherName}`.replace(
+              /\s+$/,
+              '',
+            ),
           };
         }
       }
