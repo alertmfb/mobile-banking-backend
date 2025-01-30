@@ -18,6 +18,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { BeneficiaryModule } from './modules/beneficiary/beneficiary.module';
 import { CardModule } from './modules/card/card.module';
+import { DeviceModule } from './modules/device/device.module';
+import { BillPaymentModule } from './modules/bill-payment/bill-payment.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -38,6 +41,9 @@ import { CardModule } from './modules/card/card.module';
     TransactionModule,
     BeneficiaryModule,
     CardModule,
+    DeviceModule,
+    BillPaymentModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [
