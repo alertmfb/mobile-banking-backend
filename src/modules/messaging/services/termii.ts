@@ -69,21 +69,21 @@ export class Termii implements MessagingService {
   }
 
   async sendWhatsapp(phone: string, message: string) {
-    console.log('sending whatsapp', { phone, message });
     try {
-      const response = await lastValueFrom(
-        this.httpService.post(
-          `${this.baseUrl}/broadcast/whatsapp`,
-          {
-            to: phone,
-            sms: message,
-          },
-          {
-            headers: this.header,
-          },
-        ),
-      );
-      return response.data;
+      // const response = await lastValueFrom(
+      //   this.httpService.post(
+      //     `${this.baseUrl}/broadcast/whatsapp`,
+      //     {
+      //       to: phone,
+      //       sms: message,
+      //     },
+      //     {
+      //       headers: this.header,
+      //     },
+      //   ),
+      // );
+      // return response.data;
+      return { phone, message };
     } catch (error) {
       throw new HttpException(
         `Messaging Error: ${error?.response?.data?.message}`,
