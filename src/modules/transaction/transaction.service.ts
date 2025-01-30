@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import { NameEnquiryDto } from './dtos/name-enquiry.dto';
@@ -16,9 +16,16 @@ import { TransactionRepository } from './transaction.repository';
 import { SetTransactionLimitDto } from './dtos/set-transaction-limit.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { IntraBankTransferDto } from './dtos/intra-bank-transfer.dto';
-import { generateTransactionReference } from 'src/utils/helpers';
+import { generateTransactionReference, nairaToKobo } from 'src/utils/helpers';
 import { Beneficiary, Transaction } from '@prisma/client';
 import { GetAllTransactionQueryDto } from './dtos/get-all-transaction-query.dto';
+import { GetBundlesDto } from '../bill-payment/dtos/get-bundles.dto';
+import { BuyCableTvDto } from '../bill-payment/dtos/buy-cable-tv.dto';
+import { BuyInternetDto } from '../bill-payment/dtos/buy-internet.dto';
+import { BuyAirtimeDto } from '../bill-payment/dtos/buy-airtime.dto';
+import { BillPaymentProvider } from '../bill-payment/providers/bill-payment.provider.interface';
+import { BuyElectricityDto } from '../bill-payment/dtos/buy-electricity.dto';
+import { meterAbb } from 'src/shared/enums/all.enum';
 
 @Injectable()
 export class TransactionService {
@@ -34,6 +41,8 @@ export class TransactionService {
     private readonly accountService: AccountService,
     private readonly transactionRepository: TransactionRepository,
     private readonly prismaService: PrismaService,
+    @Inject('BillPaymentProvider')
+    private readonly billService: BillPaymentProvider,
   ) {
     this.environment = this.configService.get<string>('APP_ENV');
     this.coreBankingUrl =
@@ -190,9 +199,12 @@ export class TransactionService {
     }
   }
 
-  async validateBalance(userId: string, amount: number) {
+  async validateBalance(accountNumber: string, amount: number) {
     try {
-      const balance = await this.accountService.getAccountBalance(userId);
+      const balance =
+        await this.accountService.getAccountBalanceByAccountNumber(
+          accountNumber,
+        );
       const { WithdrawableBalance } = balance;
       if (amount > Number(WithdrawableBalance)) {
         throw new HttpException(
@@ -206,11 +218,25 @@ export class TransactionService {
     }
   }
 
-  async sendMoney(userId: string, payload: SendMoneyDto) {
+  async generateTransactionReference() {
     try {
-      const { accountId, amount, accountNumber, bankCode, narration, pin } =
-        payload;
+      let reference: string;
+      let transactionCheck: Transaction;
+      do {
+        reference = generateTransactionReference();
+        transactionCheck =
+          await this.transactionRepository.findTransactionByReference(
+            reference,
+          );
+      } while (transactionCheck);
+      return reference;
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
+  async validateUserAndAccount(userId: string, accountNumber: string) {
+    try {
       const user = await this.userService.findOne(userId);
       if (!user) {
         throw new HttpException(
@@ -219,32 +245,49 @@ export class TransactionService {
         );
       }
 
-      const account = await this.accountService.findOne(accountId);
-      if (!account) {
+      const account =
+        await this.accountService.findStoredByAccountNumber(accountNumber);
+      if (!account || account.userId !== userId) {
         throw new HttpException(
           ErrorMessages.ACCOUNT_NOT_FOUND,
           HttpStatus.NOT_FOUND,
         );
       }
+      return { user, account };
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async sendMoney(userId: string, payload: SendMoneyDto) {
+    try {
+      const {
+        fromAccountNumber,
+        amount,
+        accountNumber,
+        bankCode,
+        narration,
+        accountName,
+        bankName,
+        pin,
+      } = payload;
+
+      // validate user and account
+      const validated = await this.validateUserAndAccount(
+        userId,
+        fromAccountNumber,
+      );
+
       //check if pin is correct
       await this.confirmPin(userId, { pin });
 
       //enquire name
-      const nameEnquiry = await this.nameEnquiry({ accountNumber, bankCode });
+      // const nameEnquiry = await this.nameEnquiry({ accountNumber, bankCode });
 
       //check if user has enough balance
-      await this.validateBalance(userId, amount);
+      await this.validateBalance(fromAccountNumber, amount);
 
-      let reference: string;
-      let transactionCheck: Transaction;
-
-      do {
-        reference = generateTransactionReference();
-        transactionCheck =
-          await this.transactionRepository.findTransactionByReference(
-            reference,
-          );
-      } while (transactionCheck);
+      const reference = await this.generateTransactionReference();
 
       //now initiate transfer
       return await this.prismaService.$transaction(async (prisma) => {
@@ -263,11 +306,11 @@ export class TransactionService {
           beneficiary = await prisma.beneficiary.create({
             data: {
               accountNumber,
-              bankCode: nameEnquiry.bankCode,
-              accountName: nameEnquiry.name,
-              bankName: nameEnquiry.bankName,
+              bankCode: bankCode,
+              accountName: accountName,
+              bankName: bankName,
               user: { connect: { id: userId } },
-              account: { connect: { id: accountId } },
+              account: { connect: { id: validated.account.id } },
             },
           });
         }
@@ -283,7 +326,7 @@ export class TransactionService {
             beneficiary: { connect: { id: beneficiary.id } },
             newBalance: 0,
             status: 'PENDING',
-            account: { connect: { id: accountId } },
+            account: { connect: { id: validated.account.id } },
           },
         });
 
@@ -292,7 +335,7 @@ export class TransactionService {
           if (bankCode == '00000') {
             transferResponse = await this.intraBankTransfer({
               amount: amount.toString(),
-              fromAccountNumber: account.accountNumber,
+              fromAccountNumber: validated.account.accountNumber,
               toAccountNumber: accountNumber,
               narration,
               reference: transaction.reference,
@@ -301,8 +344,8 @@ export class TransactionService {
             transferResponse = await this.interBankTransfer({
               transactionReference: transaction.reference,
               amount: amount.toString(),
-              payerAccountNumber: account.accountNumber,
-              payer: `${user.firstName} ${user.lastName} ${user.otherName}`,
+              payerAccountNumber: validated.account.accountNumber,
+              payer: `${validated.user.firstName} ${validated.user.lastName} ${validated.user.otherName}`,
               receiverBankCode: bankCode,
               receiverAccountNumber: accountNumber,
             });
@@ -323,10 +366,402 @@ export class TransactionService {
     }
   }
 
-  // async createTransaction
+  async createAirtimeTransaction(userId: string, data: BuyAirtimeDto) {
+    try {
+      const {
+        amount,
+        phoneNumber,
+        fromAccountNumber,
+        pin,
+        network,
+        serviceCategoryId,
+      } = data;
 
+      // validate user and account
+      const validated = await this.validateUserAndAccount(
+        userId,
+        fromAccountNumber,
+      );
+
+      //validate pin
+      await this.confirmPin(userId, { pin });
+
+      //validate balance
+      await this.validateBalance(fromAccountNumber, amount);
+
+      return await this.prismaService.$transaction(async (prisma) => {
+        //get the beneficiary
+        let beneficiary: Beneficiary;
+        beneficiary = await prisma.beneficiary.findFirst({
+          where: {
+            phoneNumber,
+            userId,
+            networkProvider: network,
+          },
+        });
+
+        if (!beneficiary) {
+          beneficiary = await prisma.beneficiary.create({
+            data: {
+              phoneNumber,
+              networkProvider: network,
+              user: { connect: { id: userId } },
+            },
+          });
+        }
+
+        //create transaction
+        const transaction = await prisma.transaction.create({
+          data: {
+            reference: await this.generateTransactionReference(),
+            amount,
+            narration: 'Airtime Purchase',
+            transactionType: 'AIRTIME',
+            user: { connect: { id: userId } },
+            newBalance: 0,
+            status: 'PENDING',
+            account: { connect: { id: validated.account.id } },
+            beneficiary: { connect: { id: beneficiary.id } },
+          },
+        });
+
+        if (transaction) {
+          //create bill
+          await prisma.billPayments.create({
+            data: {
+              user: { connect: { id: userId } },
+              transaction: { connect: { id: transaction.id } },
+              amount: amount,
+              biller: 'shiga',
+              productId: serviceCategoryId,
+            },
+          });
+
+          const transferResponse = await this.intraBankTransfer({
+            amount: amount.toString(),
+            fromAccountNumber: validated.account.accountNumber,
+            toAccountNumber: '0000000000',
+            narration: 'Airtime Purchase',
+            reference: transaction.reference,
+          });
+          if (!transferResponse) {
+            throw new HttpException(
+              ErrorMessages.TRANSACTION_FAILED,
+              HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+          }
+
+          return transaction;
+        }
+
+        throw new HttpException(
+          ErrorMessages.TRANSACTION_FAILED,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      });
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async createInternetTransaction(userId: string, data: BuyInternetDto) {
+    try {
+      const {
+        fromAccountNumber,
+        pin,
+        network,
+        phoneNumber,
+        serviceCategoryId,
+        bundleCode,
+      } = data;
+
+      // validate user and account
+      const validated = await this.validateUserAndAccount(
+        userId,
+        fromAccountNumber,
+      );
+
+      //validate pin
+      await this.confirmPin(userId, { pin });
+
+      //get the amount
+      const amount = await this.getInternetAmount({
+        serviceCategoryId,
+        bundleCode,
+      });
+
+      //validate balance
+      await this.validateBalance(fromAccountNumber, amount);
+
+      return await this.prismaService.$transaction(async (prisma) => {
+        //get the beneficiary
+        let beneficiary: Beneficiary;
+        beneficiary = await prisma.beneficiary.findFirst({
+          where: {
+            phoneNumber,
+            userId,
+            networkProvider: network,
+          },
+        });
+
+        if (!beneficiary) {
+          beneficiary = await prisma.beneficiary.create({
+            data: {
+              beneficiaryType: 'DATA',
+              phoneNumber,
+              networkProvider: network,
+              user: { connect: { id: userId } },
+            },
+          });
+        }
+
+        //create transaction
+        const transaction = await prisma.transaction.create({
+          data: {
+            reference: await this.generateTransactionReference(),
+            amount,
+            narration: 'Internet Purchase',
+            transactionType: 'DATA',
+            user: { connect: { id: userId } },
+            newBalance: 0,
+            status: 'PENDING',
+            account: { connect: { id: validated.account.id } },
+            beneficiary: { connect: { id: beneficiary.id } },
+          },
+        });
+
+        if (transaction) {
+          //create bill payments
+          await prisma.billPayments.create({
+            data: {
+              user: { connect: { id: userId } },
+              transaction: { connect: { id: transaction.id } },
+              amount: amount,
+              biller: 'shiga',
+              productId: serviceCategoryId,
+            },
+          });
+          const transferResponse = await this.intraBankTransfer({
+            amount: amount.toString(),
+            fromAccountNumber: validated.account.accountNumber,
+            toAccountNumber: '0000000000', // bill payment collection account
+            narration: 'Internet Purchase',
+            reference: transaction.reference,
+          });
+
+          if (!transferResponse) {
+            throw new HttpException(
+              transferResponse.message,
+              transferResponse.statusCode,
+            );
+          }
+          return transaction;
+        }
+
+        throw new HttpException(
+          ErrorMessages.TRANSACTION_FAILED,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      });
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async createCableTvTransaction(userId: string, data: BuyCableTvDto) {
+    try {
+      const { fromAccountNumber, pin, provider, cardNumber, name } = data;
+
+      const amount = 0;
+
+      // validate user and account
+      const validated = await this.validateUserAndAccount(
+        userId,
+        fromAccountNumber,
+      );
+
+      //validate pin
+      await this.confirmPin(userId, { pin });
+
+      //validate balance
+      await this.validateBalance(fromAccountNumber, amount);
+
+      return await this.prismaService.$transaction(async (prisma) => {
+        //get the beneficiary
+        let beneficiary: Beneficiary;
+        beneficiary = await prisma.beneficiary.findFirst({
+          where: {
+            tvCardNumber: cardNumber,
+            tvProvider: provider,
+            userId,
+          },
+        });
+
+        if (!beneficiary) {
+          beneficiary = await prisma.beneficiary.create({
+            data: {
+              beneficiaryType: 'TV_BILL',
+              tvCardNumber: cardNumber,
+              tvProvider: provider,
+              tvCardName: name,
+              user: { connect: { id: userId } },
+            },
+          });
+        }
+
+        //create transaction
+        const transaction = await prisma.transaction.create({
+          data: {
+            reference: await this.generateTransactionReference(),
+            amount,
+            narration: 'Cable TV Purchase',
+            transactionType: 'TV_BILL',
+            user: { connect: { id: userId } },
+            newBalance: 0,
+            status: 'PENDING',
+            account: { connect: { id: validated.account.id } },
+            beneficiary: { connect: { id: beneficiary.id } },
+          },
+        });
+
+        if (transaction) {
+          //create bill payments
+          await prisma.billPayments.create({
+            data: {
+              user: { connect: { id: userId } },
+              transaction: { connect: { id: transaction.id } },
+              amount: amount,
+              biller: 'shiga',
+              productId: provider,
+            },
+          });
+
+          //transfer to bill payment account
+          const transferResponse = await this.intraBankTransfer({
+            amount: amount.toString(),
+            fromAccountNumber: validated.account.accountNumber,
+            toAccountNumber: '0000000000', // bill payment collection account
+            narration: 'Cable TV Purchase',
+            reference: transaction.reference,
+          });
+
+          if (!transferResponse) {
+            throw new HttpException(
+              transferResponse.message,
+              transferResponse.statusCode,
+            );
+          }
+          return transaction;
+        }
+
+        throw new HttpException(
+          ErrorMessages.TRANSACTION_FAILED,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      });
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async createElectricityTransaction(userId: string, data: BuyElectricityDto) {
+    try {
+      const {
+        amount,
+        fromAccountNumber,
+        pin,
+        meterNumber,
+        meterName,
+        serviceCategoryId,
+        vendType,
+        meterType,
+      } = data;
+
+      // validate user and account
+      const validated = await this.validateUserAndAccount(
+        userId,
+        fromAccountNumber,
+      );
+      //validate pin
+      await this.confirmPin(userId, { pin });
+      //validate balance
+      await this.validateBalance(fromAccountNumber, amount);
+      return await this.prismaService.$transaction(async (prisma) => {
+        //get the beneficiary
+        let beneficiary: Beneficiary;
+        beneficiary = await prisma.beneficiary.findFirst({
+          where: {
+            meterNumber,
+            meterType,
+            userId,
+          },
+        });
+        if (!beneficiary) {
+          beneficiary = await prisma.beneficiary.create({
+            data: {
+              meterNumber,
+              meterName,
+              user: { connect: { id: userId } },
+              meterType,
+              meterTypeFull: meterAbb[meterType],
+            },
+          });
+        }
+        //create transaction
+        const transaction = await prisma.transaction.create({
+          data: {
+            reference: await this.generateTransactionReference(),
+            amount,
+            narration: 'Electricity Purchase',
+            transactionType: 'ELECTRICITY',
+            user: { connect: { id: userId } },
+            newBalance: 0,
+            status: 'PENDING',
+            account: { connect: { id: validated.account.id } },
+            beneficiary: { connect: { id: beneficiary.id } },
+          },
+        });
+        if (transaction) {
+          //store more details about the bill payment
+          await prisma.billPayments.create({
+            data: {
+              user: { connect: { id: userId } },
+              transaction: { connect: { id: transaction.id } },
+              amount: amount,
+              biller: 'shiga',
+              productId: serviceCategoryId,
+              productType: vendType,
+            },
+          });
+          const transferResponse = await this.intraBankTransfer({
+            amount: amount.toString(),
+            fromAccountNumber: validated.account.accountNumber,
+            toAccountNumber: '0000000000', // bill payment collection account
+            narration: 'Electricity Purchase',
+            reference: transaction.reference,
+          });
+          if (!transferResponse) {
+            throw new HttpException(
+              transferResponse.message,
+              transferResponse.statusCode,
+            );
+          }
+          return transaction;
+        }
+        throw new HttpException(
+          ErrorMessages.TRANSACTION_FAILED,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      });
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // async createTransaction
   async getFee(amount: number) {
     try {
+      return amount;
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -399,6 +834,24 @@ export class TransactionService {
     }
   }
 
+  async getInternetAmount(payload: GetBundlesDto) {
+    try {
+      const { serviceCategoryId, bundleCode } = payload;
+      const bundles =
+        await this.billService.getInternetPlans(serviceCategoryId);
+      const bundle = bundles.find((b: any) => b.bundleCode === bundleCode);
+      if (!bundle) {
+        throw new HttpException(
+          ErrorMessages.BUNDLE_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      return Number(bundle.amount);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   //Bank One Endpoints for Transactions
   private async getTransactionsApi(query: GetTransactionsQueryDto) {
     try {
@@ -464,7 +917,7 @@ export class TransactionService {
     try {
       const data = {
         TransactionReference: payload.transactionReference,
-        Amount: payload.amount,
+        Amount: nairaToKobo(payload.amount, true),
         PayerAccountNumber: payload.payerAccountNumber,
         Payer: payload.payer,
         ReceiverBankCode: payload.receiverBankCode,
@@ -500,7 +953,7 @@ export class TransactionService {
       const data = {
         RetrievalReference: payload.reference,
         Narration: payload.narration,
-        Amount: payload.amount,
+        Amount: nairaToKobo(payload.amount, true),
         FromAccountNumber: payload.fromAccountNumber,
         ToAccountNumber: payload.toAccountNumber,
       };

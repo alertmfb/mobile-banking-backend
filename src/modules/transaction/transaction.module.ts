@@ -7,11 +7,17 @@ import { UserModule } from '../user/user.module';
 import { AccountModule } from '../account/account.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { TransactionRepository } from './transaction.repository';
+import { BillServiceProvider } from '../bill-payment/providers';
 
 @Module({
   imports: [ConfigModule, HttpModule, UserModule, AccountModule],
   controllers: [TransactionController],
-  providers: [TransactionService, TransactionRepository, PrismaService],
+  providers: [
+    TransactionService,
+    TransactionRepository,
+    PrismaService,
+    BillServiceProvider,
+  ],
   exports: [TransactionService],
 })
 export class TransactionModule {}

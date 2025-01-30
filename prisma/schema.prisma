@@ -143,57 +143,74 @@ enum TvProvider {
   STARTIMES
 }
 
+enum MeterType {
+  BEDC
+  EKEDC
+  AEDC
+  EEDC
+  IBEDC
+  IKEDC
+  JEDC
+  KAEDC
+  KEDCO
+  PHEDC
+  YEDC
+}
+
 model User {
-  id                 String               @id @default(uuid())
-  email              String?              @unique
-  username           String?              @unique
-  firstName          String?
-  lastName           String?
-  otherName          String?
-  gender             GenderEnum?
-  reference          String?
-  password           String?
-  passcode           String?
-  pin                String?
-  dob                String?
-  pob                String?
-  country            String?
-  phoneNumber        String?              @unique
-  onboardType        OnboardType          @default(NEW)
-  onboarding         OnboardEnum          @default(NEW)
-  kycStatus          KycEnum              @default(NEW)
-  login              LoginEnum            @default(INITIATED)
-  loginAttempts      Int                  @default(0)
-  lastLogin          DateTime?
-  accounts           Account[]
-  kyc                Kyc[]
-  token              String?
-  bvnLookup          String?              @db.Text
-  ninLookup          String?              @db.Text
-  otp                String?
-  otpExpires         DateTime?
-  otpId              String?
-  phoneToken         String?              @db.Text
-  emailToken         String?              @db.Text
-  isEmailSet         Boolean              @default(false)
-  isPhoneSet         Boolean              @default(false)
-  isPinSet           Boolean              @default(false)
-  isDeleted          Boolean              @default(false)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  ResidentialAddress ResidentialAddress[]
-  SecurityQuestion   SecurityQuestion[]
-  KycUserDetails     KycUserDetails[]
-  Transaction        Transaction[]
-  TransactionLimit   TransactionLimit[]
-  Beneficiary        Beneficiary[]
-  CardRequest        CardRequest[]
+  id                     String                   @id @default(uuid())
+  email                  String?                  @unique
+  username               String?                  @unique
+  firstName              String?
+  lastName               String?
+  otherName              String?
+  gender                 GenderEnum?
+  reference              String?
+  password               String?
+  passcode               String?
+  pin                    String?
+  dob                    String?
+  pob                    String?
+  country                String?
+  phoneNumber            String?                  @unique
+  onboardType            OnboardType              @default(NEW)
+  onboarding             OnboardEnum              @default(NEW)
+  kycStatus              KycEnum                  @default(NEW)
+  login                  LoginEnum                @default(INITIATED)
+  loginAttempts          Int                      @default(0)
+  lastLogin              DateTime?
+  accounts               Account[]
+  kyc                    Kyc[]
+  token                  String?
+  bvnLookup              String?                  @db.Text
+  ninLookup              String?                  @db.Text
+  otp                    String?
+  otpExpires             DateTime?
+  otpId                  String?
+  phoneToken             String?                  @db.Text
+  emailToken             String?                  @db.Text
+  isEmailSet             Boolean                  @default(false)
+  isPhoneSet             Boolean                  @default(false)
+  isPinSet               Boolean                  @default(false)
+  isDeleted              Boolean                  @default(false)
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  ResidentialAddress     ResidentialAddress[]
+  SecurityQuestion       SecurityQuestion[]
+  KycUserDetails         KycUserDetails[]
+  Transaction            Transaction[]
+  TransactionLimit       TransactionLimit[]
+  Beneficiary            Beneficiary[]
+  CardRequest            CardRequest[]
+  NextOfKin              NextOfKin[]
+  NotificationPreference NotificationPreference[]
+  Device                 Device[]
+  BillPayments           BillPayments[]
 
   @@index([phoneNumber])
   @@index([email])
   @@index([id])
   @@map("users")
-  NextOfKin NextOfKin[]
 }
 
 model Account {
@@ -321,6 +338,7 @@ model Transaction {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   metadata        Json?
+  BillPayments    BillPayments[]
 
   @@index([accountId])
   @@index([transactionType])
@@ -362,6 +380,10 @@ model Beneficiary {
   tvProvider      TvProvider?
   phoneNumber     String?
   networkProvider NetworkProvider?
+  meterNumber     String?
+  meterName       String?
+  meterType       MeterType?
+  meterTypeFull   String?
   isBeneficiary   Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -372,8 +394,8 @@ model Beneficiary {
 }
 
 model NextOfKin {
-  id          String   @id @default(uuid())
-  user        User     @relation(fields: [userId], references: [id])
+  id          String @id @default(uuid())
+  user        User   @relation(fields: [userId], references: [id])
   userId      String
   firstName   String
   lastName    String
@@ -383,4 +405,58 @@ model NextOfKin {
   dob         String
   pob         String
   country     String
+}
+
+model NotificationPreference {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String   @unique
+  creditEmail    Boolean  @default(false)
+  creditSms      Boolean  @default(false)
+  creditPush     Boolean  @default(false)
+  creditWhatsapp Boolean  @default(false)
+  debitEmail     Boolean  @default(false)
+  debitSms       Boolean  @default(false)
+  debitPush      Boolean  @default(false)
+  debitWhatsapp  Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("notification_preferences")
+}
+
+model Device {
+  id        String   @id @default(uuid())
+  deviceId  String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  ip        String?
+  browser   String?
+  os        String?
+  device    String?
+  location  String?
+  longitude String?
+  latitude  String?
+  lastUsed  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("devices")
+}
+
+model BillPayments {
+  id            String            @id @default(uuid())
+  user          User              @relation(fields: [userId], references: [id])
+  userId        String
+  transaction   Transaction       @relation(fields: [transactionId], references: [id])
+  transactionId String
+  biller        String?
+  productId     String?
+  productType   String?
+  amount        Decimal           @db.Decimal(10, 2)
+  status        TransactionStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@map("bill_payments")
 }

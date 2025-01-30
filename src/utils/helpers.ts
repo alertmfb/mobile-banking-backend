@@ -153,3 +153,23 @@ export function generateTransactionReference(): string {
   const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
   return (timestamp + randomString).substring(0, 12).toUpperCase();
 }
+
+export function koboToNaira(
+  amount: number | string,
+  isString = false,
+): number | string {
+  if (typeof amount === 'string') {
+    amount = parseFloat(amount);
+  }
+  return isString ? (amount / 100).toString() : amount / 100;
+}
+
+export const nairaToKobo = (
+  amount: number | string,
+  isString = false,
+): number | string => {
+  if (typeof amount === 'string') {
+    amount = parseFloat(amount);
+  }
+  return isString ? (amount * 100).toString() : amount * 100;
+};

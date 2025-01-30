@@ -14,7 +14,7 @@ export class SendMoneyDto {
   })
   @IsString()
   @IsNotEmpty()
-  accountId: string;
+  fromAccountNumber: string;
 
   @ApiProperty({ description: 'The amount to send', example: 1000 })
   @IsNumber()
@@ -39,6 +39,22 @@ export class SendMoneyDto {
     message: 'Account number must be exactly 10 characters long',
   })
   accountNumber: string;
+
+  @ApiProperty({
+    description: "The recipient's account name",
+    example: 'John Doe',
+  })
+  @IsString()
+  @IsNotEmpty()
+  accountName: string;
+
+  @ApiProperty({
+    description: 'The name of the bank',
+    example: 'Alert Microfinance Bank',
+  })
+  @IsString()
+  @IsNotEmpty()
+  bankName: string;
 
   @ApiProperty({
     description: 'Narration or reason for the transaction',

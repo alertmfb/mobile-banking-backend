@@ -220,8 +220,16 @@ export class AccountService {
     }
   }
 
+  async getAccountBalanceByAccountNumber(accountNumber: string) {
+    try {
+      return await this.balanceEnquiryApi(accountNumber);
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
   async getAccountByAccountNumber(accountNo: string) {
-    console.log('accountNo', accountNo);
     const response = await lastValueFrom(
       this.httpService.get(
         `${this.coreBankingUrl}/customers/get-by-accountNo`,

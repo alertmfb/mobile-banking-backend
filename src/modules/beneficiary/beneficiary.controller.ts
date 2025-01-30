@@ -1,34 +1,91 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Query,
+  HttpException,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import { BeneficiaryService } from './beneficiary.service';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
-import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
+import { GetAllBeneficiaryQueryDto } from './dto/get-all-beneficiary-query.dto';
+import { JwtPayload } from '../../shared/interfaces/jwt-payload.interface';
+import { User } from '../../shared/decorators/user.decorator';
+import { SuccessResponseDto } from '../../shared/dtos/success-response.dto';
+import { SuccessMessage } from '../../shared/enums/success-message.enum';
+import { JwtAuthGuard } from '../../shared/guards/jwt.guard';
 
 @Controller('beneficiary')
 export class BeneficiaryController {
   constructor(private readonly beneficiaryService: BeneficiaryService) {}
 
-  @Post()
-  create(@Body() createBeneficiaryDto: CreateBeneficiaryDto) {
-    return this.beneficiaryService.create(createBeneficiaryDto);
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async findAll(
+    @Query() query: GetAllBeneficiaryQueryDto,
+    @User() user: JwtPayload,
+  ) {
+    try {
+      const userId = user.id;
+      const response = await this.beneficiaryService.getAll(userId, query);
+      return new SuccessResponseDto(
+        SuccessMessage.BENEFICIARY_RETRIEVED,
+        response,
+      );
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  @Get()
-  findAll() {
-    return this.beneficiaryService.findAll();
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  async create(
+    @Body() payload: CreateBeneficiaryDto,
+    @User() user: JwtPayload,
+  ) {
+    try {
+      const userId = user.id;
+      const response = await this.beneficiaryService.create(userId, payload);
+      return new SuccessResponseDto(
+        SuccessMessage.BENEFICIARY_CREATED,
+        response,
+      );
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.beneficiaryService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBeneficiaryDto: UpdateBeneficiaryDto) {
-    return this.beneficiaryService.update(+id, updateBeneficiaryDto);
+  @UseGuards(JwtAuthGuard)
+  async findOne(@Param('id') id: string, @User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const response = await this.beneficiaryService.getOne(userId, id);
+      return new SuccessResponseDto(
+        SuccessMessage.BENEFICIARY_RETRIEVED,
+        response,
+      );
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.beneficiaryService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  async remove(@Param('id') id: string, @User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const response = await this.beneficiaryService.delete(userId, id);
+      return new SuccessResponseDto(
+        SuccessMessage.BENEFICIARY_DELETED,
+        response,
+      );
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

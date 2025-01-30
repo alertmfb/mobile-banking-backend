@@ -32,7 +32,6 @@ export class DojahService implements KycProvider {
     this.header = {
       apikey: this.apiKey,
     };
-    console.log('apiky', this.apiKey);
   }
 
   async verifyTin(tin: string): Promise<any> {

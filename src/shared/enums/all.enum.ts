@@ -60,3 +60,31 @@ export enum TvProvider {
   GOTV = 'GOTV',
   STARTIMES = 'STARTIMES',
 }
+
+export enum ElectricityProvider {
+  BEDC = 'BEDC',
+  EKEDC = 'EKEDC',
+  AEDC = 'AEDC',
+  EEDC = 'EEDC',
+  IBEDC = 'IBEDC',
+  IKEDC = 'IKEDC',
+  JEDC = 'JEDC',
+  KAEDC = 'KAEDC',
+  KAEDCO = 'KAEDCO',
+  PHEDC = 'PHEDC',
+  YEDEC = 'YEDEC',
+}
+
+export const meterAbb = {
+  BEDC: 'Benin Electricity Distribution Company',
+  EKEDC: 'Eko Electricity Distribution Company',
+  AEDC: 'Abuja Electricity Distribution Company',
+  EEDC: 'Enugu Electricity Distribution Company',
+  IBEDC: 'Ibadan Electricity Distribution Company',
+  IKEDC: 'Ikeja Electricity Distribution Company',
+  JEDC: 'Jos Electricity Distribution Company',
+  KAEDC: 'Kaduna Electricity Distribution Company',
+  KEDCO: 'Kano Electricity Distribution Company',
+  PHEDC: 'Port Harcourt Electricity Distribution Company',
+  YEDC: 'Yola Electricity Distribution Company',
+};

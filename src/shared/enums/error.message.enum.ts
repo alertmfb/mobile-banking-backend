@@ -48,4 +48,7 @@ export enum ErrorMessages {
   BVN_ALREADY_EXISTS = 'BVN has already been used by another user',
   NO_CONTACT_INFO_ON_ACCOUNT = 'No contact information on account',
   INSUFFICIENT_BALANCE = 'Insufficient account balance',
+  BENEFICIARY_NOT_FOUND = 'Beneficiary not found',
+  TRANSACTION_FAILED = 'Transaction failed',
+  BUNDLE_NOT_FOUND = 'Bundle not found',
 }
