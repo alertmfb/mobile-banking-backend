@@ -23,6 +23,9 @@ export class AppService {
         this.prismaService.cardRequest.deleteMany(),
         this.prismaService.transaction.deleteMany(),
         this.prismaService.transactionLimit.deleteMany(),
+        this.prismaService.securityQuestion.deleteMany(),
+        this.prismaService.billPayments.deleteMany(),
+        this.prismaService.device.deleteMany(),
         this.prismaService.user.deleteMany(),
       ]);
       //
