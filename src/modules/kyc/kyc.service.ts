@@ -22,6 +22,7 @@ import {
   obfuscatePhoneNumber,
   formatBvnDate,
   ninIsValid,
+  toLowerCase,
 } from 'src/utils/helpers';
 import { MessagingService } from '../messaging/messaging-service.interface';
 import { ConfigService } from '@nestjs/config';
@@ -342,6 +343,36 @@ export class KycService {
       user.gender = gender.toUpperCase();
       // Update the user after verification
       await this.userService.update(user.id, user);
+
+      const kycDetails = await this.kycRepository.getKycUserDetails(userId);
+      if (kycDetails) {
+        await this.kycRepository.updateKycUserDetailsByUserId(userId, {
+          phoneOne: lookUpResponse.entity.phone_number1,
+          phoneTwo: lookUpResponse.entity.phone_number2,
+          email: toLowerCase(lookUpResponse.entity.email),
+          residentialAddress: lookUpResponse.entity.residential_address,
+          residentialLga: lookUpResponse.entity.lga_of_residence,
+          residentialState: lookUpResponse.entity.state_of_residence,
+          originLga: lookUpResponse.entity.lga_of_origin,
+          originState: lookUpResponse.entity.state_of_origin,
+          title: lookUpResponse.entity.title,
+          maritalStatus: lookUpResponse.entity.marital_status,
+        });
+      } else {
+        await this.kycRepository.createKycUserDetails({
+          user: { connect: { id: user.id } },
+          phoneOne: lookUpResponse.entity.phone_number1,
+          phoneTwo: lookUpResponse.entity.phone_number2,
+          email: toLowerCase(lookUpResponse.entity.email),
+          residentialAddress: lookUpResponse.entity.residential_address,
+          residentialLga: lookUpResponse.entity.lga_of_residence,
+          residentialState: lookUpResponse.entity.state_of_residence,
+          originLga: lookUpResponse.entity.lga_of_origin,
+          originState: lookUpResponse.entity.state_of_origin,
+          title: lookUpResponse.entity.title,
+          maritalStatus: lookUpResponse.entity.marital_status,
+        });
+      }
 
       return await this.kycRepository.getByUserId(userId);
     } catch (e) {
