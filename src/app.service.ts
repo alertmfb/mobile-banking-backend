@@ -29,11 +29,6 @@ export class AppService {
         this.prismaService.promoApply.deleteMany(),
         this.prismaService.user.deleteMany(),
       ]);
-      //
-      // const prisma = PrismaClient();
-      // await prisma.$executeRaw`TRUNCATE TABLE residential_addresses, kycs, accounts, users RESTART IDENTITY CASCADE;`;
-
-      // Return true if all operations are successful
       return true;
     } catch (error) {
       console.error('Error clearing database:', error);
