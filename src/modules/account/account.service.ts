@@ -120,6 +120,8 @@ export class AccountService {
         }
       }
 
+      console.log('Creating account for user 1', user.id);
+
       // check if user has added residential address
       const residentialAdress =
         await this.kycService.getResidentialAddress(userId);
@@ -148,6 +150,8 @@ export class AccountService {
           );
         }
       }
+
+      console.log('Creating account for user 2', user.id);
 
       const data = {
         Gender: user.gender == 'MALE' ? '0' : '1',

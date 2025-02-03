@@ -19,7 +19,7 @@ export enum SuccessMessage {
   NAME_DOB_SET = 'Name and Date of Birth saved successfully',
   EMAIL_SET = 'OTP sent to email successfully',
   EMAIL_VERIFIED = 'Email verified successfully',
-  KYB_RETRIEVED = 'KYB status retrieved successfully',
+  KYC_RETRIEVED = 'KYC status retrieved successfully',
   LOGIN_SUCCESS = 'Login successful',
   USERNAME_AVAILABLE = 'Username is available',
   ME = 'User details retrieved successfully',
