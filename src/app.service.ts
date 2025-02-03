@@ -13,15 +13,18 @@ export class AppService {
     try {
       // Truncate all specified tables
       await Promise.all([
-        this.prismaService.residentialAddress.deleteMany(),
         this.prismaService.kyc.deleteMany(),
         this.prismaService.kycUserDetails.deleteMany(),
         this.prismaService.account.deleteMany(),
         this.prismaService.residentialAddress.deleteMany(),
+        this.prismaService.nextOfKin.deleteMany(),
+        this.prismaService.notificationPreference.deleteMany(),
         this.prismaService.beneficiary.deleteMany(),
         this.prismaService.cardRequest.deleteMany(),
         this.prismaService.transaction.deleteMany(),
         this.prismaService.transactionLimit.deleteMany(),
+        this.prismaService.user.deleteMany(),
+
         this.prismaService.user.deleteMany(),
       ]);
       //
