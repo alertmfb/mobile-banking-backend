@@ -58,6 +58,7 @@ export class AccountService {
   }
 
   async createAccount(userId: string, background?: boolean) {
+    console.log('i amanaged to start', userId);
     try {
       const user = await this.userService.findOne(userId);
       if (!user) {
