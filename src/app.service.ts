@@ -24,8 +24,6 @@ export class AppService {
         this.prismaService.transaction.deleteMany(),
         this.prismaService.transactionLimit.deleteMany(),
         this.prismaService.user.deleteMany(),
-
-        this.prismaService.user.deleteMany(),
       ]);
       //
       // const prisma = PrismaClient();
