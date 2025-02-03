@@ -294,7 +294,8 @@ export class KycService {
         );
       }
 
-      // Verify BVN and OTP
+      // Verify BVN and OTP\
+      const bvnToUse = this.enviroment == 'production' ? bvn : this.testBvn;
       const isBvnValid = bvn === decrypt(user.bvnLookup);
       const isOtpValid = otp === user.otp && new Date() <= user.otpExpires;
 
@@ -321,7 +322,9 @@ export class KycService {
         await this.kycRepository.updateKycByUserId(userId, kyc);
       }
 
-      const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({ bvn });
+      const lookUpResponse = await this.kycProvider.bvnLookupAdvanced({
+        bvn: bvnToUse,
+      });
       if (!lookUpResponse || !lookUpResponse.entity) {
         throw new HttpException(
           ErrorMessages.COULD_NOT_VERIFY_BVN,
