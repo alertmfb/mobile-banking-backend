@@ -51,4 +51,7 @@ export enum ErrorMessages {
   BENEFICIARY_NOT_FOUND = 'Beneficiary not found',
   TRANSACTION_FAILED = 'Transaction failed',
   BUNDLE_NOT_FOUND = 'Bundle not found',
+  PROMO_CODE_INVALID = 'Invalid promo code',
+  COULD_NOT_VALIDATE_PROMO_CODE = 'Could not validate promo code',
+  PROMO_CODE_ALREADY_USED = 'Promo code already used',
 }

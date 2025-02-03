@@ -173,6 +173,12 @@ enum Relationship {
   FRIEND
 }
 
+enum PromoType {
+  SIGNUP
+  REFERRAL
+  PROMO
+}
+
 model User {
   id                     String                   @id @default(uuid())
   email                  String?                  @unique
@@ -222,6 +228,7 @@ model User {
   NotificationPreference NotificationPreference[]
   Device                 Device[]
   BillPayments           BillPayments[]
+  PromoApply             PromoApply[]
 
   @@index([phoneNumber])
   @@index([email])
@@ -365,6 +372,7 @@ model Transaction {
   updatedAt       DateTime          @updatedAt
   metadata        Json?
   BillPayments    BillPayments[]
+  PromoApply      PromoApply[]
 
   @@index([accountId])
   @@index([transactionType])
@@ -489,4 +497,20 @@ model BillPayments {
   updatedAt     DateTime          @updatedAt
 
   @@map("bill_payments")
+}
+
+model PromoApply {
+  id            String       @id @default(uuid())
+  user          User         @relation(fields: [userId], references: [id])
+  userId        String
+  code          String
+  awarded       Boolean      @default(false)
+  amount        Decimal?     @db.Decimal(10, 2)
+  awardedDate   DateTime?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("promo_applies")
 }

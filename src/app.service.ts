@@ -26,6 +26,7 @@ export class AppService {
         this.prismaService.securityQuestion.deleteMany(),
         this.prismaService.billPayments.deleteMany(),
         this.prismaService.device.deleteMany(),
+        this.prismaService.promoApply.deleteMany(),
         this.prismaService.user.deleteMany(),
       ]);
       //

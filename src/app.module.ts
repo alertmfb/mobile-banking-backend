@@ -23,6 +23,7 @@ import { BillPaymentModule } from './modules/bill-payment/bill-payment.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { MetricModule } from './modules/metric/metric.module';
 import { MiddlewareModule } from './modules/middleware/middleware.module';
+import { PromoModule } from './modules/promo/promo.module';
 
 @Module({
   imports: [
@@ -46,8 +47,9 @@ import { MiddlewareModule } from './modules/middleware/middleware.module';
     DeviceModule,
     BillPaymentModule,
     NotificationModule,
-    MiddlewareModule,
     MetricModule,
+    PromoModule,
+    MiddlewareModule,
   ],
   controllers: [AppController],
   providers: [
