@@ -37,7 +37,7 @@ import { CreateNextOfKinDto } from './dto/next-of-kin.dto';
 @Injectable()
 export class KycService {
   private readonly logger: Logger;
-  private readonly enviroment: string;
+  private readonly environment: string;
   private testBvn = '22222222222';
   constructor(
     @Inject('KycProvider')
@@ -52,7 +52,7 @@ export class KycService {
     private readonly eventEmitter: EventEmitter2,
   ) {
     this.logger = new Logger(KycService.name);
-    this.enviroment = this.configService.get<string>('APP_ENV');
+    this.environment = this.configService.get<string>('APP_ENV');
   }
   async setNationality(userId: string, payload: NationalityDto) {
     try {
@@ -97,7 +97,7 @@ export class KycService {
         );
       }
       const bvn =
-        this.enviroment == 'production'
+        this.environment == 'production'
           ? decrypt(user.bvnLookup)
           : '22222222222';
       const response = await this.kycProvider.bvnLooupBasic({ bvn });
@@ -146,7 +146,7 @@ export class KycService {
 
       // Validate BVN against user's details
       // Validate BVN against user's details
-      const bvnToUse = this.enviroment == 'production' ? bvn : this.testBvn;
+      const bvnToUse = this.environment == 'production' ? bvn : this.testBvn;
       const response = await this.kycProvider.bvnValidate({
         bvn: bvnToUse,
         firstName: user.firstName,
@@ -246,27 +246,39 @@ export class KycService {
         );
       }
 
+      // prepare phone or email to send OTP
+      const phoneOrEmailToSendOtp =
+        this.environment === 'production'
+          ? bvnPhone || bvnEmail
+          : user.phoneNumber || user.email;
+
       const otp = Math.floor(100000 + Math.random() * 900000);
       const otpExpire = new Date(new Date().getTime() + 60 * 60 * 1000);
       const messageToSend = `Your verification code is ${otp}. Valid for 1 hour`;
 
-      // call messaging servide to send OTP
-      const smsResponse = await this.messagingService.sendSms(
-        toSmsNo(bvnPhone),
-        messageToSend,
-      );
-
-      if (!response) {
-        throw new HttpException(
-          ErrorMessages.COULD_NOT_SEND_OTP,
-          HttpStatus.INTERNAL_SERVER_ERROR,
+      let otpResponse: any;
+      if (phoneOrEmailToSendOtp.includes('@')) {
+        otpResponse = await this.messagingService.sendEmailToken({
+          email_address: phoneOrEmailToSendOtp,
+          code: otp.toString(),
+        });
+      } else {
+        // call messaging servide to send OTP
+        otpResponse = await this.messagingService.sendSms(
+          toSmsNo(bvnPhone),
+          messageToSend,
         );
+
+        if (!otpResponse) {
+          throw new HttpException(
+            ErrorMessages.COULD_NOT_SEND_OTP,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
       }
 
-      const otpId = smsResponse.message_id;
       // Update user with OTP details
       Object.assign(user, {
-        otpId,
         otp: otp.toString(),
         otpExpires: otpExpire,
         bvnLookup: encrypt(bvn),
@@ -296,7 +308,7 @@ export class KycService {
       }
 
       // Verify BVN and OTP\
-      const bvnToUse = this.enviroment == 'production' ? bvn : this.testBvn;
+      const bvnToUse = this.environment == 'production' ? bvn : this.testBvn;
       const isBvnValid = bvn === decrypt(user.bvnLookup);
       const isOtpValid = otp === user.otp && new Date() <= user.otpExpires;
 
@@ -336,8 +348,10 @@ export class KycService {
       // Update user with retrieved details
       const { first_name, last_name, date_of_birth, middle_name, gender } =
         lookUpResponse.entity;
-      user.firstName = first_name;
-      user.lastName = last_name;
+      user.firstName =
+        this.environment == 'production' ? first_name : user.firstName;
+      user.lastName =
+        this.environment == 'production' ? last_name : user.lastName;
       user.dob = formatBvnDate(date_of_birth).toString();
       user.otherName = middle_name;
       user.gender = gender.toUpperCase();
@@ -474,7 +488,7 @@ export class KycService {
 
       const response = await this.kycProvider.bvnFaceMatch({
         bvn:
-          this.enviroment == 'production'
+          this.environment == 'production'
             ? decrypt(user.bvnLookup)
             : '22222222222',
         selfie_image: image,

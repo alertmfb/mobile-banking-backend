@@ -16,15 +16,15 @@ export class Shiga implements BillPaymentProvider {
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly header: any;
-  private readonly enviroment: string;
+  private readonly environment: string;
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.enviroment = this.configService.get<string>('APP_ENV');
+    this.environment = this.configService.get<string>('APP_ENV');
     this.apiKey = this.configService.get<string>('SHIGA_KEY');
     this.baseUrl =
-      this.enviroment === 'production'
+      this.environment === 'production'
         ? 'https://api-middleware-prod.alertmfb.com.ng/api/sharedServices/v1/bills/services'
         : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1/bills/services';
     this.header = {

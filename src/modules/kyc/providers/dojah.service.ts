@@ -18,14 +18,14 @@ export class DojahService implements KycProvider {
   private readonly baseUrl;
   private readonly apiKey;
   private readonly header;
-  private readonly enviroment;
+  private readonly environment;
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.enviroment = this.configService.get<string>('APP_ENV');
+    this.environment = this.configService.get<string>('APP_ENV');
     this.baseUrl =
-      this.enviroment === 'production'
+      this.environment === 'production'
         ? 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1'
         : 'https://api-middleware-staging.alertmfb.com.ng/api/sharedServices/v1';
     this.apiKey = this.configService.get('KYC_KEY');
