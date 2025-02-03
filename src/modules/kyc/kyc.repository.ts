@@ -58,6 +58,21 @@ export class KycRepository {
     });
   }
 
+  async createNextOfKin(payload: Prisma.NextOfKinCreateInput) {
+    return this.prismaService.nextOfKin.create({ data: payload });
+  }
+
+  async getNextOfKinByUserId(userId: string) {
+    return this.prismaService.nextOfKin.findFirst({ where: { userId } });
+  }
+
+  async updateNextOfKinByUserId(
+    userId: string,
+    data: Prisma.NextOfKinUpdateInput,
+  ) {
+    return this.prismaService.nextOfKin.update({ where: { id: userId }, data });
+  }
+
   async getByUserId(userId: string) {
     return this.prismaService.kyc.findFirst({
       where: { userId },

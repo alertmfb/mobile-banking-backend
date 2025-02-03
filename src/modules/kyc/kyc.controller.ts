@@ -148,6 +148,18 @@ export class KycController {
     }
   }
 
+  @Post('verify-next-of-kin')
+  @UseGuards(JwtAuthGuard)
+  async nextOfKin(@Body() payload: any, @User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const response = await this.kybService.nextOfKin(userId, payload);
+      return new SuccessResponseDto(SuccessMessage.NEXT_OF_KIN_SAVED, response);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Post('attestation')
   @ApiBody({ type: Boolean })
   @UseGuards(JwtAuthGuard)

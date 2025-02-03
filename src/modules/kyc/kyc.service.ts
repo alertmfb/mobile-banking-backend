@@ -26,10 +26,12 @@ import {
 import { MessagingService } from '../messaging/messaging-service.interface';
 import { ConfigService } from '@nestjs/config';
 import { VerifyBvnOtpDto } from './dto/verify-bvn-otp.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, Relationship } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccountCreateEvent } from '../account/events/account-create.event';
 import { Events } from 'src/shared/enums/events.enum';
+import { StorageService } from '../storage/storage-service.interface';
+import { CreateNextOfKinDto } from './dto/next-of-kin.dto';
 
 @Injectable()
 export class KycService {
@@ -41,6 +43,8 @@ export class KycService {
     private readonly kycProvider: KycProvider,
     @Inject('MessagingProvider')
     private readonly messagingService: MessagingService,
+    @Inject('StorageProvider')
+    private readonly storageService: StorageService,
     private readonly kycRepository: KycRepository,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
@@ -466,6 +470,98 @@ export class KycService {
 
   async residentialAddress(userId: string, payload: ResidentialAddressDto) {
     try {
+      // Find the user
+      const user = await this.userService.findById(userId);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Check if the residential address already exists
+      const residentialAddress =
+        await this.kycRepository.getResidentialAddress(userId);
+
+      // Upload photos if they exist
+      const streetPhoto = payload.streetPhoto
+        ? await this.storageService.uploadBase64File(
+            payload.streetPhoto,
+            'buildings',
+          )
+        : null;
+
+      const buildingPhoto = payload.buildingPhoto
+        ? await this.storageService.uploadBase64File(
+            payload.buildingPhoto,
+            'buildings',
+          )
+        : null;
+
+      // Dynamically construct the addressData object with only fields that have values
+      const addressData = {
+        ...(payload.address && { address: payload.address }),
+        ...(payload.city && { city: payload.city }),
+        ...(payload.state && { state: payload.state }),
+        ...(payload.zipcode && { zipcode: payload.zipcode }),
+        ...(payload.landmark && { landmark: payload.landmark }),
+        ...(payload.lga && { lga: payload.lga }),
+        ...(payload.buildingColour && {
+          buildingColour: payload.buildingColour,
+        }),
+        ...(payload.gateColor && { gateColor: payload.gateColor }),
+        ...(payload.buildingType && {
+          buildingType: payload.buildingType,
+        }),
+        ...(payload.occupancyLength && {
+          occupancyLength: payload.occupancyLength,
+        }),
+        ...(payload.identifierName && {
+          identifierName: payload.identifierName,
+        }),
+        ...(payload.identifierRelationship && {
+          identifierRelationship: payload.identifierRelationship,
+        }),
+        ...(payload.otherName && { otherName: payload.otherName }),
+        ...(streetPhoto && { streetPhoto }),
+        ...(buildingPhoto && { buildingPhoto }),
+      };
+
+      // Update or create the residential address
+      if (residentialAddress) {
+        await this.kycRepository.updateResidentialAddressByUserId(
+          userId,
+          addressData,
+        );
+      } else {
+        await this.kycRepository.createResidentialAddress({
+          user: { connect: { id: user.id } },
+          ...addressData,
+        });
+      }
+
+      // Update the KYC status
+      const kyc = await this.kycRepository.getByUserId(userId);
+      if (kyc) {
+        kyc.residentialAddressSubmitted = true;
+        await this.kycRepository.updateKycByUserId(userId, kyc);
+      } else {
+        await this.kycRepository.createKyc({
+          user: { connect: { id: user.id } },
+          residentialAddressStatus: false,
+          residentialAddressSubmitted: true,
+        });
+      }
+
+      // Return the updated residential address
+      return await this.kycRepository.getResidentialAddress(userId);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async residentialAddressOld(userId: string, payload: ResidentialAddressDto) {
+    try {
       const user = await this.userService.findById(userId);
       if (!user) {
         throw new HttpException(
@@ -548,6 +644,61 @@ export class KycService {
         return await this.kycRepository.getByUserId(userId);
       }
       return await this.kycRepository.getResidentialAddress(userId);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async nextOfKin(userId: string, payload: CreateNextOfKinDto) {
+    try {
+      // Find the user
+      const user = await this.userService.findById(userId);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Check if the next of kin already exists
+      const nextOfKin = await this.kycRepository.getNextOfKinByUserId(userId);
+
+      // Prepare the data for creating/updating the next of kin
+      const nextOfKinData = {
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        phoneNumber: payload.phoneNumber,
+        email: payload.email,
+        address: payload.address,
+        city: payload.city,
+        country: payload.country,
+        relationship: payload.relationship as Relationship,
+      };
+
+      // Update or create the next of kin
+      if (nextOfKin) {
+        await this.kycRepository.updateNextOfKinByUserId(userId, nextOfKinData);
+      } else {
+        await this.kycRepository.createNextOfKin({
+          user: { connect: { id: user.id } },
+          ...nextOfKinData,
+        });
+      }
+
+      // Update the KYC status
+      const kyc = await this.kycRepository.getByUserId(userId);
+      if (kyc) {
+        kyc.nextOfKinStatus = true;
+        await this.kycRepository.updateKycByUserId(userId, kyc);
+      } else {
+        await this.kycRepository.createKyc({
+          user: { connect: { id: user.id } },
+          nextOfKinStatus: true,
+        });
+      }
+
+      // Return the updated next of kin details
+      return await this.kycRepository.getNextOfKinByUserId(userId);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

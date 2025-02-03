@@ -72,9 +72,7 @@ export class UserRepository {
     const skip = page && perPage ? (page - 1) * perPage : 0;
     const take = perPage ? Number(perPage) : 10;
 
-    const where: any = {
-      AND: [{ deleted: false }],
-    };
+    const where: any = {};
 
     if (keyword) {
       where.OR = [

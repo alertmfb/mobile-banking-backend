@@ -13,6 +13,7 @@ import { ChangePasscodeDto } from './dto/change-passcode.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { decrypt, encrypt, toSmsNo } from 'src/utils/helpers';
 import { MessagingService } from '../messaging/messaging-service.interface';
+import { GetAllUserQueryDto } from './dto/get-all-user-query.dto';
 
 @Injectable()
 export class UserService {
@@ -26,6 +27,10 @@ export class UserService {
 
   async getMe(id: string) {
     return await this.userRepository.findById(id);
+  }
+
+  async findAll(query: GetAllUserQueryDto) {
+    return await this.userRepository.findAll(query);
   }
 
   async checkUsername(id: string, username: string) {

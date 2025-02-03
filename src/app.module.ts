@@ -21,6 +21,8 @@ import { CardModule } from './modules/card/card.module';
 import { DeviceModule } from './modules/device/device.module';
 import { BillPaymentModule } from './modules/bill-payment/bill-payment.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { MetricModule } from './modules/metric/metric.module';
+import { MiddlewareModule } from './modules/middleware/middleware.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { NotificationModule } from './modules/notification/notification.module';
     DeviceModule,
     BillPaymentModule,
     NotificationModule,
+    MiddlewareModule,
+    MetricModule,
   ],
   controllers: [AppController],
   providers: [

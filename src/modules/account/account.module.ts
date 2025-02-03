@@ -12,9 +12,10 @@ import { KycServiceProvider } from '../kyc/providers';
 import { KycRepository } from '../kyc/kyc.repository';
 import { MessagingModule } from '../messaging/messaging.module';
 import { AccountCreateListener } from './listeners/account-create.listener';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
-  imports: [HttpModule, ConfigModule, MessagingModule],
+  imports: [HttpModule, ConfigModule, MessagingModule, StorageModule],
   controllers: [AccountController],
   providers: [
     AccountService,

@@ -10,6 +10,8 @@ import { UserService } from '../user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRepository } from '../user/user.repository';
 import { MessagingModule } from '../messaging/messaging.module';
+import { StorageModule } from '../storage/storage.module';
+import { AccountModule } from '../account/account.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { MessagingModule } from '../messaging/messaging.module';
     ConfigModule,
     NestjsFormDataModule.config({ storage: MemoryStoredFile }),
     MessagingModule,
+    StorageModule,
+    AccountModule,
   ],
   controllers: [KycController],
   providers: [

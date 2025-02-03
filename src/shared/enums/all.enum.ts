@@ -88,3 +88,19 @@ export const meterAbb = {
   PHEDC: 'Port Harcourt Electricity Distribution Company',
   YEDC: 'Yola Electricity Distribution Company',
 };
+
+export enum Relationship {
+  FATHER = 'FATHER',
+  MOTHER = 'MOTHER',
+  SIBLING = 'SIBLING',
+  FRIEND = 'FRIEND',
+}
+
+export enum BuildingType {
+  DETACHED = 'DETACHED',
+  SEMI_DETACHED = 'SEMI_DETACHED',
+  BUNGALOW = 'BUNGALOW',
+  DUPLEX = 'DUPLEX',
+  APARTMENT = 'APARTMENT',
+  FLATS = 'FLATS',
+}

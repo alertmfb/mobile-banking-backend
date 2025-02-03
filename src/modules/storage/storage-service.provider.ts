@@ -5,7 +5,7 @@ import { Cloudinary } from './services/cloudinary';
 import { S3Storage } from './services/s3';
 
 export const StorageServiceProvider: Provider = {
-  provide: 'StorageService',
+  provide: 'StorageProvider',
   useFactory: (configService: ConfigService): StorageService => {
     const storageProvider =
       configService.get<string>('STORAGE_PROVIDER') || 'cloudinary';

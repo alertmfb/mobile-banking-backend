@@ -13,6 +13,7 @@ import { KycServiceProvider } from '../kyc/providers';
 import { KycRepository } from '../kyc/kyc.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserModule } from '../user/user.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserModule } from '../user/user.module';
     UserModule,
     AccountModule,
     MessagingModule,
+    StorageModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',

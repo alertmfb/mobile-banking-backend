@@ -4,6 +4,6 @@ import { StorageService } from './storage-service.interface';
 @Controller()
 export class StorageController {
   constructor(
-    @Inject('StorageService') private readonly storageService: StorageService,
+    @Inject('StorageProvider') private readonly storageService: StorageService,
   ) {}
 }
