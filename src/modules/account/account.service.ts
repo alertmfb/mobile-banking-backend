@@ -58,7 +58,6 @@ export class AccountService {
   }
 
   async createAccount(userId: string, background?: boolean) {
-    console.log('i amanaged to start', userId);
     try {
       const user = await this.userService.findOne(userId);
       if (!user) {
@@ -452,7 +451,7 @@ export class AccountService {
         5,
       );
       for (const kyc of kycs) {
-        const background = true;
+        const background = false;
         await this.createAccount(kyc.userId, background);
       }
     } catch (error) {
