@@ -182,7 +182,7 @@ export class KycController {
     try {
       const userId = user.id;
       const response = await this.kybService.getKyc(userId);
-      return new SuccessResponseDto(SuccessMessage.KYB_RETRIEVED, response);
+      return new SuccessResponseDto(SuccessMessage.KYC_RETRIEVED, response);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
