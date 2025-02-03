@@ -133,6 +133,7 @@ export class AccountService {
         ? `${residentialAdress.address}, ${residentialAdress.city}, ${residentialAdress.state}`
         : `${kycDetails.residentialAddress}, ${kycDetails.residentialLga}, ${kycDetails.residentialState}`;
       //check if names, email, phone number, dob is set
+      console.log({ user, email, phone, address });
       if (
         !user.firstName ||
         !user.lastName ||
