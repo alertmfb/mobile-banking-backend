@@ -137,6 +137,14 @@ export class AuthService {
           expiresIn: '7d',
         }),
         kyc: await this.kycService.getKyc(user.id),
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          otherName: user.otherName,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+        },
       };
     } catch (e) {
       this.logger.error(e.message);

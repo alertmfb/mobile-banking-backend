@@ -256,6 +256,8 @@ export class KycService {
       const otpExpire = new Date(new Date().getTime() + 60 * 60 * 1000);
       const messageToSend = `Your verification code is ${otp}. Valid for 1 hour`;
 
+      console.log('phoneOrEmailToSendOtp', phoneOrEmailToSendOtp);
+
       let otpResponse: any;
       if (phoneOrEmailToSendOtp.includes('@')) {
         otpResponse = await this.messagingService.sendEmailToken({

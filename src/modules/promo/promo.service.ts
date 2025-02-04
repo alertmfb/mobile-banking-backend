@@ -42,7 +42,7 @@ export class PromoService {
       }
 
       const promo = await this.promoRepository.getOneByCode(code);
-      if (promo || promo?.userId === userId) {
+      if (promo && promo?.userId === userId) {
         throw new HttpException(
           ErrorMessages.PROMO_CODE_ALREADY_USED,
           HttpStatus.BAD_REQUEST,
