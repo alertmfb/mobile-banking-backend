@@ -267,7 +267,7 @@ export class KycService {
       } else {
         // call messaging servide to send OTP
         otpResponse = await this.messagingService.sendSms(
-          toSmsNo(bvnPhone),
+          toSmsNo(phoneOrEmailToSendOtp),
           messageToSend,
         );
 
