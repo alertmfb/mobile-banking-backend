@@ -83,7 +83,7 @@ export class Termii implements MessagingService {
         ),
       );
       return response.data;
-      return { phone, message };
+      // return { phone, message };
     } catch (error) {
       throw new HttpException(
         `Messaging Error: ${error?.response?.data?.message}`,
