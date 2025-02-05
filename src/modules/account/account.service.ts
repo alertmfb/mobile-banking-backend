@@ -10,7 +10,7 @@ import { ErrorMessages } from 'src/shared/enums/error.message.enum';
 import { decrypt } from 'src/utils/helpers';
 import { randomInt } from 'node:crypto';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { AccountBalanceResponseDto } from '../transaction/dtos/account-balance-reponse.dto';
 import { GenerateStatementQueryDto } from './dto/generate-statement-query.dto';
 
@@ -283,9 +283,9 @@ export class AccountService {
         );
       }
       const response = await this.balanceEnquiryApi(account.accountNumber);
-      return response;
-      console.log('Response', response);
-      return plainToClass(AccountBalanceResponseDto, response);
+      return plainToInstance(AccountBalanceResponseDto, response, {
+        excludeExtraneousValues: true,
+      });
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.NOT_FOUND);

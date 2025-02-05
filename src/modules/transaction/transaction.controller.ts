@@ -27,10 +27,7 @@ export class TransactionController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getTransactions(
-    @Query() payload: GetAllTransactionQueryDto,
-    @User() user: JwtPayload,
-  ) {
+  async getTransactions(@Query() payload: GetAllTransactionQueryDto) {
     try {
       const resObj = await this.transactionService.getTransactions(payload);
       return new SuccessResponseDto(
@@ -146,6 +143,17 @@ export class TransactionController {
       const userId = user.id;
       const resObj = await this.transactionService.getLimit(userId);
       return new SuccessResponseDto(SuccessMessage.LIMIT_RETRIEVED, resObj);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('notification')
+  @UseGuards(JwtAuthGuard)
+  async setNotification(@Body() payload: any) {
+    try {
+      await this.transactionService.handleTransactionWebhook(payload);
+      return HttpStatus.OK;
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -1,5 +1,11 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import { NameEnquiryDto } from './dtos/name-enquiry.dto';
@@ -969,6 +975,16 @@ export class TransactionService {
       return response.data;
     } catch (e) {
       this.logger.error(e);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  //webhook for transaction
+  async handleTransactionWebhook(data: any) {
+    try {
+      const { TransactionReference, Status, Amount, Message } = data;
+      return;
+    } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

@@ -113,13 +113,19 @@ export class AuthService {
       }
 
       if (user.login !== 'PHONE_VERIFIED') {
-        throw new HttpException('Phone not verified', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          ErrorMessages.PHONE_NOT_VERIFIED,
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       const isMatch = await bcrypt.compare(passcode, user.passcode);
 
       if (!isMatch) {
-        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+        throw new HttpException(
+          ErrorMessages.INVALID_EMAIL_OR_PASSWORD,
+          HttpStatus.UNAUTHORIZED,
+        );
       }
 
       const payload = {

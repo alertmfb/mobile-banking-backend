@@ -1,21 +1,18 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 
 export class AccountBalanceResponseDto {
-  @Expose({ name: 'AccountNumber' })
-  accountNumber: string;
+  @Expose({ name: 'AvailableBalance' })
+  @Transform(({ value }) => String(value), { toClassOnly: true })
+  availableBalance: number;
 
-  @Expose({ name: 'AccountName' })
-  accountName: string;
+  @Expose({ name: 'LedgerBalance' })
+  @Transform(({ value }) => String(value), { toClassOnly: true })
+  ledgerBalance: number;
 
-  @Expose({ name: 'AccountBalance' })
-  accountBalance: number;
+  @Expose({ name: 'WithdrawableBalance' })
+  @Transform(({ value }) => String(value), { toClassOnly: true })
+  withdrawableBalance: number;
 
-  @Expose({ name: 'Currency' })
-  currency: string;
-
-  @Expose({ name: 'IsSuccessful' })
-  isSuccessful: boolean;
-
-  @Expose({ name: 'ResponseMessage' })
-  responseMessage: string;
+  @Expose({ name: 'AccountType' })
+  accountType: string;
 }
