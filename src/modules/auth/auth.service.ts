@@ -150,6 +150,9 @@ export class AuthService {
           otherName: user.otherName,
           email: user.email,
           phoneNumber: user.phoneNumber,
+          isPinSet: user.isPinSet,
+          isEmailSet: user.isEmailSet,
+          isPhoneSet: user.isPhoneSet,
         },
       };
     } catch (e) {
