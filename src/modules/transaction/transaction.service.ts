@@ -68,7 +68,22 @@ export class TransactionService {
   //Methods that will call the Bank One Endpoints
   async fetchBanks() {
     try {
-      return await this.fetchBanksApi();
+      const alertProp = {
+        Code: '00000',
+        Gateway: null,
+        ID: '00000',
+        Name: 'Alert Microfinance Bank',
+        Status: false,
+        StatusDetails: null,
+        RequestStatus: false,
+        ResponseDescription: null,
+        ResponseStatus: null,
+      };
+
+      const otherProp = await this.fetchBanksApi();
+      const otherBanks = Array.isArray(otherProp) ? otherProp : [];
+
+      return [alertProp, ...otherBanks];
     } catch (error) {
       throw new HttpException(
         `Transaction Error: ${error?.response?.data?.message}`,
