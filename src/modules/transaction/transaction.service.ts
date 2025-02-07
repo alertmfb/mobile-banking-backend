@@ -213,6 +213,7 @@ export class TransactionService {
       }
       const hashedPin = await bcrypt.hash(pin, 10);
       user.pin = hashedPin;
+      user.isPinSet = true;
       await this.userService.update(user.id, user);
       return;
     } catch (e) {
