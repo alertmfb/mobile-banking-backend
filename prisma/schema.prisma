@@ -173,6 +173,11 @@ enum PromoType {
   PROMO
 }
 
+enum TransactionAction {
+  DEBIT
+  CREDIT
+}
+
 model User {
   id                     String                   @id @default(uuid())
   email                  String?                  @unique
@@ -357,6 +362,7 @@ model Transaction {
   beneficiary     Beneficiary?      @relation(fields: [beneficiaryId], references: [id])
   beneficiaryId   String?
   transactionType TransactionType   @default(TRANSFER)
+  action          TransactionAction @default(DEBIT)
   amount          Decimal           @db.Decimal(10, 2)
   newBalance      Decimal           @db.Decimal(10, 2)
   reference       String?

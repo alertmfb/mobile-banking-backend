@@ -343,6 +343,7 @@ export class TransactionService {
             reference,
             amount,
             narration,
+            action: 'DEBIT',
             transactionType: 'TRANSFER',
             user: { connect: { id: userId } },
             beneficiary: { connect: { id: beneficiary.id } },
@@ -353,7 +354,10 @@ export class TransactionService {
         });
 
         if (transaction) {
-          let transferResponse;
+          let transferResponse: {
+            message: string | Record<string, any>;
+            statusCode: number;
+          };
           if (bankCode == '00000') {
             transferResponse = await this.intraBankTransfer({
               amount: amount.toString(),
@@ -438,6 +442,7 @@ export class TransactionService {
             reference: await this.generateTransactionReference(),
             amount,
             narration: 'Airtime Purchase',
+            action: 'DEBIT',
             transactionType: 'AIRTIME',
             user: { connect: { id: userId } },
             newBalance: 0,
@@ -543,6 +548,7 @@ export class TransactionService {
             reference: await this.generateTransactionReference(),
             amount,
             narration: 'Internet Purchase',
+            action: 'DEBIT',
             transactionType: 'DATA',
             user: { connect: { id: userId } },
             newBalance: 0,
@@ -637,6 +643,7 @@ export class TransactionService {
             reference: await this.generateTransactionReference(),
             amount,
             narration: 'Cable TV Purchase',
+            action: 'DEBIT',
             transactionType: 'TV_BILL',
             user: { connect: { id: userId } },
             newBalance: 0,
@@ -735,6 +742,7 @@ export class TransactionService {
             reference: await this.generateTransactionReference(),
             amount,
             narration: 'Electricity Purchase',
+            action: 'DEBIT',
             transactionType: 'ELECTRICITY',
             user: { connect: { id: userId } },
             newBalance: 0,
