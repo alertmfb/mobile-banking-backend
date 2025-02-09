@@ -86,6 +86,15 @@ export class TransactionRepository {
     });
   }
 
+  findOneTransactionForUser(id: string, userId: string) {
+    return this.prismaService.transaction.findFirst({
+      where: {
+        id,
+        userId,
+      },
+    });
+  }
+
   findTransactionByUserId(userId: string) {
     return this.prismaService.transaction.findMany({
       where: {

@@ -3,11 +3,11 @@ import {
   Controller,
   Get,
   HttpException,
-  HttpStatus,
+  HttpStatus, Param,
   Post,
   Query,
-  UseGuards,
-} from '@nestjs/common';
+  UseGuards
+} from "@nestjs/common";
 import { TransactionService } from './transaction.service';
 import { JwtAuthGuard } from 'src/shared/guards/jwt.guard';
 import { SuccessMessage } from 'src/shared/enums/success-message.enum';
@@ -32,6 +32,21 @@ export class TransactionController {
       const resObj = await this.transactionService.getTransactions(payload);
       return new SuccessResponseDto(
         SuccessMessage.TRANSACTIONS_RETRIEVED,
+        resObj,
+      );
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('/:id')
+  @UseGuards(JwtAuthGuard)
+  async getTransactionById(@Param('id') id: string, @User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const resObj = await this.transactionService.getOneForUser(userId, id);
+      return new SuccessResponseDto(
+        SuccessMessage.TRANSACTION_RETRIEVED,
         resObj,
       );
     } catch (err) {

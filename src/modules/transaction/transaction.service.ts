@@ -65,6 +65,24 @@ export class TransactionService {
     this.logger = new Logger(TransactionService.name);
   }
 
+  async getOneForUser(userId: string, id: string) {
+    try {
+      const t = await this.transactionRepository.findOneTransactionForUser(
+        id,
+        userId,
+      );
+      if (!t) {
+        throw new HttpException(
+          ErrorMessages.TRANSACTION_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      return t;
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   //Methods that will call the Bank One Endpoints
   async fetchBanks() {
     try {
