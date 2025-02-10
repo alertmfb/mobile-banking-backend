@@ -13,7 +13,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { AccountBalanceResponseDto } from '../transaction/dtos/account-balance-reponse.dto';
 import { GenerateStatementQueryDto } from './dto/generate-statement-query.dto';
-import { SubAccountResponseDto } from "./dto/sub-account-reponse.dto";
+import { SubAccountResponseDto } from './dto/sub-account-reponse.dto';
 
 @Injectable()
 export class AccountService {
