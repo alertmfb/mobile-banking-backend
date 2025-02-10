@@ -9,12 +9,11 @@ import {
 
 export class CreateCardRequestDto {
   @ApiProperty({
-    description:
-      'Unique identifier for the account associated with the card request',
-    example: '456e1234-e89b-12d3-a456-426614174000',
+    description: 'Account ID for the card request',
+    example: '0939458693',
   })
   @IsString()
-  accountId: string;
+  accountNumber: string;
 
   @ApiProperty({
     description: 'Delivery option for the card',
