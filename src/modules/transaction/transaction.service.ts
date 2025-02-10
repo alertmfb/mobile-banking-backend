@@ -1024,7 +1024,7 @@ export class TransactionService {
   //webhook for transaction
   async handleTransactionWebhook(data: any) {
     try {
-      const { TransactionReference, Status, Amount, Message } = data;
+      console.log(data);
       return;
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);

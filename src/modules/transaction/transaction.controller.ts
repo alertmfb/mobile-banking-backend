@@ -20,6 +20,7 @@ import { ConfirmPinDto } from './dtos/confirm-pin-query.dto';
 import { SetPinDto } from '../auth/dto/set-pin.dto';
 import { SetTransactionLimitDto } from './dtos/set-transaction-limit.dto';
 import { GetAllTransactionQueryDto } from './dtos/get-all-transaction-query.dto';
+import { TransactionWebhookDto } from "./dtos/transaction-webhook.dto";
 
 @Controller('transaction')
 export class TransactionController {
@@ -32,21 +33,6 @@ export class TransactionController {
       const resObj = await this.transactionService.getTransactions(payload);
       return new SuccessResponseDto(
         SuccessMessage.TRANSACTIONS_RETRIEVED,
-        resObj,
-      );
-    } catch (err) {
-      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  @Get('/:id')
-  @UseGuards(JwtAuthGuard)
-  async getTransactionById(@Param('id') id: string, @User() user: JwtPayload) {
-    try {
-      const userId = user.id;
-      const resObj = await this.transactionService.getOneForUser(userId, id);
-      return new SuccessResponseDto(
-        SuccessMessage.TRANSACTION_RETRIEVED,
         resObj,
       );
     } catch (err) {
@@ -163,12 +149,27 @@ export class TransactionController {
     }
   }
 
-  @Post('notification')
-  @UseGuards(JwtAuthGuard)
-  async setNotification(@Body() payload: any) {
+  @Post('webhook/core-banking')
+  // @UseGuards(JwtAuthGuard)
+  async setNotification(@Body() payload: TransactionWebhookDto) {
     try {
       await this.transactionService.handleTransactionWebhook(payload);
       return HttpStatus.OK;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('/:id')
+  @UseGuards(JwtAuthGuard)
+  async getTransactionById(@Param('id') id: string, @User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const resObj = await this.transactionService.getOneForUser(userId, id);
+      return new SuccessResponseDto(
+        SuccessMessage.TRANSACTION_RETRIEVED,
+        resObj,
+      );
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
