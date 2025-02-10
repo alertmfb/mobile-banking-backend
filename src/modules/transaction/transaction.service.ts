@@ -385,7 +385,13 @@ export class TransactionService {
               narration,
               reference: transaction.reference,
             });
-            console.log('transferResponse', transferResponse);
+
+            if (transferResponse) {
+              await prisma.transaction.update({
+                where: { id: transaction.id },
+                data: { status: 'SUCCESS' },
+              });
+            }
           } else {
             transferResponse = await this.interBankTransfer({
               transactionReference: transaction.reference,
@@ -1007,6 +1013,7 @@ export class TransactionService {
         FromAccountNumber: payload.fromAccountNumber,
         ToAccountNumber: payload.toAccountNumber,
       };
+      console.log('data', data);
       const response = await lastValueFrom(
         this.httpService.post(
           `${this.coreBankingUrl}/transactions/intra-bank-transfer`,
@@ -1016,6 +1023,15 @@ export class TransactionService {
           },
         ),
       );
+
+      console.log('response', response.data);
+
+      if (response.data?.ResponseCode != '00') {
+        throw new HttpException(
+          response.data?.ResponseMessage,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
       return response.data;
     } catch (e) {
       this.logger.error(e);
