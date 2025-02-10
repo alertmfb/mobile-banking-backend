@@ -11,6 +11,15 @@ export class TransactionRepository {
     return this.prismaService.transaction.create({ data });
   }
 
+  updateTransaction(id: string, data: Prisma.TransactionUpdateInput) {
+    return this.prismaService.transaction.update({
+      where: {
+        id,
+      },
+      data,
+    });
+  }
+
   async findAllTransactions(query: GetAllTransactionQueryDto, userId?: string) {
     const {
       page,
@@ -83,6 +92,7 @@ export class TransactionRepository {
       where: {
         reference,
       },
+      include: { beneficiary: true },
     });
   }
 

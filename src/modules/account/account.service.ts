@@ -13,6 +13,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { AccountBalanceResponseDto } from '../transaction/dtos/account-balance-reponse.dto';
 import { GenerateStatementQueryDto } from './dto/generate-statement-query.dto';
+import { SubAccountResponseDto } from "./dto/sub-account-reponse.dto";
 
 @Injectable()
 export class AccountService {
@@ -22,6 +23,7 @@ export class AccountService {
   private readonly headers: { apikey: string };
   private readonly logger: Logger;
   private accountCreationRunning: boolean;
+
   constructor(
     private readonly accountRepository: AccountRepository,
     private readonly userService: UserService,
@@ -49,12 +51,51 @@ export class AccountService {
     return this.accountRepository.getOneById(id);
   }
 
+  async getUserByAccountNumber(accountNumber: string) {
+    const account =
+      await this.accountRepository.findByAccountNumber(accountNumber);
+    if (!account) {
+      throw new HttpException(
+        ErrorMessages.ACCOUNT_NOT_FOUND,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return await this.userService.findOne(account.userId);
+  }
+
   async storeAccount(account: Prisma.AccountCreateInput) {
     return this.accountRepository.create(account);
   }
 
   async findStoredByAccountNumber(accountNumber: string) {
     return this.accountRepository.findByAccountNumber(accountNumber);
+  }
+
+  async getSubAccounts(userId: string) {
+    try {
+      const user = await this.userService.findOne(userId);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const customerId = await this.getCustomerId(user.id);
+      const response = await this.getSubAccountsApi(customerId);
+      if (!response.Accounts) {
+        throw new HttpException(
+          ErrorMessages.ACCOUNT_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      return plainToInstance(SubAccountResponseDto, response.Accounts, {
+        excludeExtraneousValues: true,
+      });
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async createAccount(userId: string, background?: boolean) {
@@ -319,6 +360,22 @@ export class AccountService {
     }
   }
 
+  async getCustomerId(userId: string) {
+    try {
+      const account = await this.accountRepository.getAccountByUserId(userId);
+      if (!account) {
+        throw new HttpException(
+          ErrorMessages.ACCOUNT_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      return account.customerId;
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
   async generateStatement(userId: string, query: GenerateStatementQueryDto) {
     try {
       const user = await this.userService.findOne(userId);
@@ -394,6 +451,26 @@ export class AccountService {
     } catch (e) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getSubAccountsApi(customerId: string) {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(
+          `${this.coreBankingUrl}/accounts/get-sub-accounts`,
+          {
+            headers: this.headers,
+            params: { customerId },
+          },
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Account Error: ${error?.response?.data?.message || error.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
     }
   }
 

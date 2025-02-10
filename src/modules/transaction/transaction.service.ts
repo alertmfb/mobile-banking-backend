@@ -40,6 +40,7 @@ export class TransactionService {
   private readonly environment: string;
   private readonly headers: { apikey: string };
   private readonly logger: Logger;
+
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
@@ -384,6 +385,7 @@ export class TransactionService {
               narration,
               reference: transaction.reference,
             });
+            console.log('transferResponse', transferResponse);
           } else {
             transferResponse = await this.interBankTransfer({
               transactionReference: transaction.reference,
@@ -1024,7 +1026,102 @@ export class TransactionService {
   //webhook for transaction
   async handleTransactionWebhook(data: any) {
     try {
-      console.log(data);
+      const {
+        Amount,
+        AccountNumber,
+        RecipientAccountNumber,
+        AvailableBalance,
+        ResponseCode,
+        TransactionReference,
+        Narration,
+      } = data;
+
+      const transaction =
+        await this.transactionRepository.findTransactionByReference(
+          TransactionReference,
+        );
+
+      const debitUserBalanceEnq =
+        await this.accountService.getAccountBalanceByAccountNumber(
+          AccountNumber,
+        );
+
+      const creditUser = await this.accountService.getUserByAccountNumber(
+        RecipientAccountNumber,
+      );
+
+      const creditAccount = await this.accountService.getAccountByAccountNumber(
+        RecipientAccountNumber,
+      );
+
+      if (!creditUser || !creditAccount) {
+        throw new HttpException(
+          ErrorMessages.ACCOUNT_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (ResponseCode !== '00') {
+        transaction.status = 'FAILED';
+        await this.transactionRepository.updateTransaction(transaction.id, {
+          status: 'FAILED',
+          newBalance: debitUserBalanceEnq?.WithdrawableBalance,
+        });
+      }
+
+      if (ResponseCode == '00') {
+        await this.prismaService.$transaction(async (prisma) => {
+          if (
+            transaction &&
+            transaction.beneficiary.accountNumber == AccountNumber
+          ) {
+            await prisma.transaction.update({
+              where: { id: transaction.id },
+              data: {
+                status: 'SUCCESS',
+                newBalance: debitUserBalanceEnq?.WithdrawableBalance,
+              },
+            });
+          }
+
+          let beneficiary: Beneficiary;
+
+          beneficiary = await prisma.beneficiary.findFirst({
+            where: {
+              accountNumber: RecipientAccountNumber,
+              userId: creditUser.id,
+            },
+          });
+
+          if (!beneficiary) {
+            beneficiary = await prisma.beneficiary.create({
+              data: {
+                accountNumber: RecipientAccountNumber,
+                accountName: creditAccount.accountName,
+                bankCode: creditAccount.bankCode,
+                bankName: creditAccount.bankName,
+                user: { connect: { id: creditUser.id } },
+                account: { connect: { id: creditAccount.id } },
+              },
+            });
+          }
+
+          await prisma.transaction.create({
+            data: {
+              reference: await this.generateTransactionReference(),
+              amount: Amount,
+              narration: Narration,
+              action: 'CREDIT',
+              transactionType: 'TRANSFER',
+              user: { connect: { id: creditUser.id } },
+              newBalance: AvailableBalance,
+              status: 'SUCCESS',
+              account: { connect: { id: creditAccount.id } },
+              beneficiary: { connect: { id: beneficiary.id } },
+            },
+          });
+        });
+      }
       return;
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);

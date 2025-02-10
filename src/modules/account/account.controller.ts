@@ -20,6 +20,21 @@ import { GenerateStatementQueryDto } from './dto/generate-statement-query.dto';
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async getAccount(@User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const resObj = await this.accountService.getSubAccounts(userId);
+      return new SuccessResponseDto(
+        SuccessMessage.ACCOUNT_DETAILS_RETRIEVED,
+        resObj,
+      );
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Post()
   create() {
     return this.accountService.createAccount('userId');
