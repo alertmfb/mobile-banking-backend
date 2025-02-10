@@ -34,12 +34,14 @@ export class CreateCardRequestDto {
   cardType: CardType = CardType.VERVE;
 
   @ApiProperty({
+    required: false,
     description: 'Branch where the card will be picked up',
     example: 'YABA',
     enum: PickupBranch,
     default: PickupBranch.YABA,
   })
   @IsEnum(PickupBranch)
+  @IsOptional()
   pickupBranch: PickupBranch = PickupBranch.YABA;
 
   @ApiProperty({

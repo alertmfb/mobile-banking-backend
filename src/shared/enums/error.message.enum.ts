@@ -33,7 +33,7 @@ export enum ErrorMessages {
   PHONE_IN_USE = 'Email Address / Phone number in use',
   BVN_MISMATCH = 'BVN mismatch',
   PHONE_NUMBER_NOT_FOUND = 'Phone number not found',
-  PIN_NOT_SET = 'Failed to set pin',
+  PIN_NOT_SET = 'Pin not set',
   KYC_NOT_INITIATED = 'You have not started your KYC process',
   ACCOUNT_ALREADY_EXISTS = 'Account already exists',
   BVN_IS_A_MUST_BEFORE_FACE = 'You must verify BVN before verifying your face',
