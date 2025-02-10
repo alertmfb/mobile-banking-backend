@@ -92,6 +92,7 @@ export class TransactionRepository {
         id,
         userId,
       },
+      include: {beneficiary: true}
     });
   }
 
