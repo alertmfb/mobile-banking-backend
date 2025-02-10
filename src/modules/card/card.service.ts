@@ -21,7 +21,9 @@ export class CardService {
           HttpStatus.NOT_FOUND,
         );
       }
-      const account = await this.accountService.findOne(payload.accountId);
+      const account = await this.accountService.findStoredByAccountNumber(
+        payload.accountNumber,
+      );
       if (!account || account.userId !== userId) {
         throw new HttpException(
           ErrorMessages.ACCOUNT_NOT_FOUND,
@@ -31,7 +33,7 @@ export class CardService {
 
       return this.cardRepository.createCardRquest({
         user: { connect: { id: userId } },
-        account: { connect: { id: payload.accountId } },
+        account: { connect: { id: account.id } },
         deliveryOption: payload.deliveryOption,
         cardType: payload.cardType,
         pickupBranch: payload.pickupBranch,
