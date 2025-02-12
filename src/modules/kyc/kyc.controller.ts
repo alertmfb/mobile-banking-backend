@@ -21,6 +21,7 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt.guard';
 import { JwtPayload } from 'src/shared/interfaces/jwt-payload.interface';
 import { AttestDto } from './dto/attest.dto';
 import { VerifyBvnOtpDto } from './dto/verify-bvn-otp.dto';
+import { CreateNextOfKinDto } from './dto/next-of-kin.dto';
 
 @ApiTags('Know your Customer')
 @Controller('kyc')
@@ -150,7 +151,10 @@ export class KycController {
 
   @Post('verify-next-of-kin')
   @UseGuards(JwtAuthGuard)
-  async nextOfKin(@Body() payload: any, @User() user: JwtPayload) {
+  async nextOfKin(
+    @Body() payload: CreateNextOfKinDto,
+    @User() user: JwtPayload,
+  ) {
     try {
       const userId = user.id;
       const response = await this.kybService.nextOfKin(userId, payload);
@@ -183,6 +187,36 @@ export class KycController {
       const userId = user.id;
       const response = await this.kybService.getKyc(userId);
       return new SuccessResponseDto(SuccessMessage.KYC_RETRIEVED, response);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('residential-address')
+  @UseGuards(JwtAuthGuard)
+  async getResidentialAddress(@User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const response = await this.kybService.getResidentialAddress(userId);
+      return new SuccessResponseDto(
+        SuccessMessage.RESIDENTIAL_ADDRESS_RETRIEVED,
+        response,
+      );
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('next-of-kin')
+  @UseGuards(JwtAuthGuard)
+  async getNextOfKin(@User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const response = await this.kybService.getNextOfKin(userId);
+      return new SuccessResponseDto(
+        SuccessMessage.NEXT_OF_KIN_RETRIEVED,
+        response,
+      );
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

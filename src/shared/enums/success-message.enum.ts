@@ -73,4 +73,6 @@ export enum SuccessMessage {
   TRANSACTION_RETRIEVED = 'Transaction sum retrieved successfully',
   CONSUMER_RETRIEVED = 'Consumer banking metrics retrieved successfully',
   PROMO_CODE_VALIDATED = 'Promo code validated successfully',
+  RESIDENTIAL_ADDRESS_RETRIEVED = 'Residential address retrieved successfully',
+  NEXT_OF_KIN_RETRIEVED = 'Next of kin retrieved successfully',
 }

@@ -39,6 +39,7 @@ export class KycService {
   private readonly logger: Logger;
   private readonly environment: string;
   private testBvn = '22222222222';
+
   constructor(
     @Inject('KycProvider')
     private readonly kycProvider: KycProvider,
@@ -54,6 +55,7 @@ export class KycService {
     this.logger = new Logger(KycService.name);
     this.environment = this.configService.get<string>('APP_ENV');
   }
+
   async setNationality(userId: string, payload: NationalityDto) {
     try {
       const user = await this.userService.findById(userId);
@@ -792,6 +794,10 @@ export class KycService {
     return await this.kycRepository.getResidentialAddress(userId);
   }
 
+  async getNextOfKin(userId: string) {
+    return await this.kycRepository.getNextOfKinByUserId(userId);
+  }
+
   async getKyc(userId: string) {
     return await this.kycRepository.getByUserId(userId);
   }
@@ -801,7 +807,7 @@ export class KycService {
   }
 
   async getManyKycWhereQuery(query: Prisma.KycWhereInput, take: number) {
-    return await this.kycRepository.getManyKycWhereQuery(query, take);
+    return this.kycRepository.getManyKycWhereQuery(query, take);
   }
 
   async updateKyc(userId: string, data: Prisma.KycUpdateInput) {
