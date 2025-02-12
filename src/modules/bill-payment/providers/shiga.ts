@@ -11,6 +11,8 @@ import {
   ShigaValidateElectricityMeterNumber,
   ShigaValidateSmartCard,
 } from './bill-payment.types';
+import { DataBundleResponseDto } from "../dtos/credit-switch/internet-plan-response.dto";
+import { plainToInstance } from "class-transformer";
 
 export class Shiga implements BillPaymentProvider {
   private readonly apiKey: string;
@@ -78,7 +80,9 @@ export class Shiga implements BillPaymentProvider {
           headers: this.header,
         }),
       );
-      return response.data.data;
+      return plainToInstance(DataBundleResponseDto, response.data.data, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       throw new HttpException(
         `Bill Provider SH Error: ${error?.response?.data?.message || error.message}`,

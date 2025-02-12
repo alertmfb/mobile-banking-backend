@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, Length } from 'class-validator';
+import { IsString, IsNotEmpty, Length, IsNumber } from 'class-validator';
 import { TvProvider } from 'src/shared/enums/all.enum';
 
 export class BuyCableTvDto {
@@ -47,9 +47,30 @@ export class BuyCableTvDto {
   })
   provider: TvProvider;
 
+  @ApiProperty({
+    required: true,
+    example: 'John Doe',
+    description: 'Customer Name',
+  })
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiProperty({
+    required: true,
+    description: 'The period of the invoice',
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  invoicePeriod: number;
+
+  @ApiProperty({
+    required: true,
+    description: 'The amount to pay',
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
 
   @ApiProperty({ description: "User's transaction PIN", example: '1234' })
   @IsString()

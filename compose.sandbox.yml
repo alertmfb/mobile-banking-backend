@@ -20,6 +20,7 @@ services:
       CORE_BANKING_SANDOX_KEY: ${CORE_BANKING_SANDOX_KEY}
       CORE_BANKING_LIVE_URL: ${CORE_BANKING_LIVE_URL}
       CORE_BANKING_LIVE_KEY: ${CORE_BANKING_LIVE_KEY}
+      CREDIT_SWITCH_KEY: ${CREDIT_SWITCH_KEY}
     volumes:
       - .:/app
       - /app/node_modules
