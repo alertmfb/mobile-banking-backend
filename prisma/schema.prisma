@@ -430,7 +430,7 @@ model Beneficiary {
 model NextOfKin {
   id           String       @id @default(uuid())
   user         User         @relation(fields: [userId], references: [id])
-  userId       String
+  userId       String       @unique
   firstName    String
   lastName     String
   phoneNumber  String

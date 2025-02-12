@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class KycRepository {
   constructor(private readonly prismaService: PrismaService) {}
+
   async createKyc(data: Prisma.KycCreateInput): Promise<Kyc> {
     return this.prismaService.kyc.create({ data });
   }
@@ -70,7 +71,7 @@ export class KycRepository {
     userId: string,
     data: Prisma.NextOfKinUpdateInput,
   ) {
-    return this.prismaService.nextOfKin.update({ where: { id: userId }, data });
+    return this.prismaService.nextOfKin.update({ where: { userId }, data });
   }
 
   async getByUserId(userId: string) {
