@@ -435,6 +435,8 @@ export class TransactionService {
         fromAccountNumber,
       );
 
+      console.log('validated', validated);
+
       //validate pin
       await this.confirmPin(userId, { pin });
 
@@ -493,7 +495,7 @@ export class TransactionService {
           const transferResponse = await this.intraBankTransfer({
             amount: amount.toString(),
             fromAccountNumber: validated.account.accountNumber,
-            toAccountNumber: '0000000000',
+            toAccountNumber: '1100063641',
             narration: 'Airtime Purchase',
             reference: transaction.reference,
           });
@@ -598,7 +600,7 @@ export class TransactionService {
           const transferResponse = await this.intraBankTransfer({
             amount: amount.toString(),
             fromAccountNumber: validated.account.accountNumber,
-            toAccountNumber: '0000000000', // bill payment collection account
+            toAccountNumber: '1100063641', // bill payment collection account
             narration: 'Internet Purchase',
             reference: transaction.reference,
           });
@@ -695,7 +697,7 @@ export class TransactionService {
           const transferResponse = await this.intraBankTransfer({
             amount: amount.toString(),
             fromAccountNumber: validated.account.accountNumber,
-            toAccountNumber: '0000000000', // bill payment collection account
+            toAccountNumber: '1100063641', // bill payment collection account
             narration: 'Cable TV Purchase',
             reference: transaction.reference,
           });
@@ -792,7 +794,7 @@ export class TransactionService {
           const transferResponse = await this.intraBankTransfer({
             amount: amount.toString(),
             fromAccountNumber: validated.account.accountNumber,
-            toAccountNumber: '0000000000', // bill payment collection account
+            toAccountNumber: '1100063641', // bill payment collection account
             narration: 'Electricity Purchase',
             reference: transaction.reference,
           });
