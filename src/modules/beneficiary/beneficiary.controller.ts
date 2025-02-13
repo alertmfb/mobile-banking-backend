@@ -91,7 +91,7 @@ export class BeneficiaryController {
     }
   }
 
-  @Patch(':/id/set')
+  @Patch(':id/set')
   @UseGuards(JwtAuthGuard)
   async makeBeneficiary(
     @Param('id') id: string,
