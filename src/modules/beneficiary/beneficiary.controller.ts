@@ -9,6 +9,7 @@ import {
   HttpException,
   HttpStatus,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { BeneficiaryService } from './beneficiary.service';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
@@ -54,6 +55,21 @@ export class BeneficiaryController {
         SuccessMessage.BENEFICIARY_CREATED,
         response,
       );
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Patch(':/id/make-beneficiary')
+  @UseGuards(JwtAuthGuard)
+  async makeBeneficiary(@Param('id') id: string, @User() user: JwtPayload) {
+    try {
+      const userId = user.id;
+      const response = await this.beneficiaryService.makeBeneficiary(
+        userId,
+        id,
+      );
+      return new SuccessResponseDto(SuccessMessage.MADE_BENEFICIARY, response);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

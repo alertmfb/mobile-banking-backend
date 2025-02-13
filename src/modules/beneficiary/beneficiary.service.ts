@@ -102,6 +102,32 @@ export class BeneficiaryService {
     }
   }
 
+  async makeBeneficiary(userId: string, id: string) {
+    try {
+      const user = await this.userService.findOne(userId);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const beneficiary = await this.beneficiaryRepository.getOneForUser(
+        userId,
+        id,
+      );
+      if (!beneficiary) {
+        throw new HttpException(
+          ErrorMessages.BENEFICIARY_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      beneficiary.isBeneficiary = true;
+      return await this.beneficiaryRepository.update(userId, id, beneficiary);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async getAll(userId: string, query: GetAllBeneficiaryQueryDto) {
     try {
       const user = await this.userService.findOne(userId);

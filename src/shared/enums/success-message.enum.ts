@@ -46,6 +46,7 @@ export enum SuccessMessage {
   BENEFICIARY_RETRIEVED = 'Beneficiary retrieved successfully',
   BENEFICIARY_CREATED = 'Beneficiary created successfully',
   BENEFICIARY_DELETED = 'Beneficiary deleted successfully',
+  MADE_BENEFICIARY = 'Beneficiary made successfully',
   LIMIT_SET = 'Transaction limit set successfully',
   LIMIT_RETRIEVED = 'Transaction limit retrieved successfully',
   SET_NOTIFICATION_PREFERENCE = 'Notification preference set successfully',
