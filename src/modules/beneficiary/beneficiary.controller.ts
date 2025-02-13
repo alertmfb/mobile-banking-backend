@@ -19,6 +19,7 @@ import { User } from '../../shared/decorators/user.decorator';
 import { SuccessResponseDto } from '../../shared/dtos/success-response.dto';
 import { SuccessMessage } from '../../shared/enums/success-message.enum';
 import { JwtAuthGuard } from '../../shared/guards/jwt.guard';
+import { SetBeneficiaryDto } from './dto/set-beneficiary.dto';
 
 @Controller('beneficiary')
 export class BeneficiaryController {
@@ -60,14 +61,19 @@ export class BeneficiaryController {
     }
   }
 
-  @Patch(':/id/make-beneficiary')
+  @Patch(':/id/set')
   @UseGuards(JwtAuthGuard)
-  async makeBeneficiary(@Param('id') id: string, @User() user: JwtPayload) {
+  async makeBeneficiary(
+    @Param('id') id: string,
+    @Body() payload: SetBeneficiaryDto,
+    @User() user: JwtPayload,
+  ) {
     try {
       const userId = user.id;
       const response = await this.beneficiaryService.makeBeneficiary(
         userId,
         id,
+        payload,
       );
       return new SuccessResponseDto(SuccessMessage.MADE_BENEFICIARY, response);
     } catch (e) {

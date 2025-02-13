@@ -6,6 +6,7 @@ import { ErrorMessages } from '../../shared/enums/error.message.enum';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 import { Beneficiary } from '@prisma/client';
 import { UpdateBeneficiaryDto } from './dto/update-beneficiary.dto';
+import { SetBeneficiaryDto } from './dto/set-beneficiary.dto';
 
 @Injectable()
 export class BeneficiaryService {
@@ -102,8 +103,13 @@ export class BeneficiaryService {
     }
   }
 
-  async makeBeneficiary(userId: string, id: string) {
+  async makeBeneficiary(
+    userId: string,
+    id: string,
+    payload: SetBeneficiaryDto,
+  ) {
     try {
+      const { isBeneficiary } = payload;
       const user = await this.userService.findOne(userId);
       if (!user) {
         throw new HttpException(
@@ -121,7 +127,7 @@ export class BeneficiaryService {
           HttpStatus.NOT_FOUND,
         );
       }
-      beneficiary.isBeneficiary = true;
+      beneficiary.isBeneficiary = isBeneficiary;
       return await this.beneficiaryRepository.update(userId, id, beneficiary);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
