@@ -400,6 +400,8 @@ export class TransactionService {
                 data: { status: 'SUCCESS' },
               });
             }
+
+            return beneficiary;
           } else {
             transferResponse = await this.interBankTransfer({
               transactionReference: transaction.reference,
@@ -409,6 +411,7 @@ export class TransactionService {
               receiverBankCode: bankCode,
               receiverAccountNumber: accountNumber,
             });
+            return beneficiary;
           }
 
           if (!transferResponse) {
