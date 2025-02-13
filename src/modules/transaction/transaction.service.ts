@@ -32,6 +32,7 @@ import { BuyAirtimeDto } from '../bill-payment/dtos/buy-airtime.dto';
 import { BillPaymentProvider } from '../bill-payment/providers/bill-payment.provider.interface';
 import { BuyElectricityDto } from '../bill-payment/dtos/buy-electricity.dto';
 import { meterAbb } from 'src/shared/enums/all.enum';
+import { LOGO_MAP } from '../../shared/constants/logo';
 
 @Injectable()
 export class TransactionService {
@@ -72,12 +73,19 @@ export class TransactionService {
         id,
         userId,
       );
+
       if (!t) {
         throw new HttpException(
           ErrorMessages.TRANSACTION_NOT_FOUND,
           HttpStatus.NOT_FOUND,
         );
       }
+
+      if (t.beneficiary) {
+        const network = t.beneficiary.networkProvider;
+        (t.beneficiary as any).logo = LOGO_MAP[network] || null;
+      }
+
       return t;
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -1,3 +1,5 @@
+import { LOGO_MAP } from "../../../../shared/constants/logo";
+
 export class CreditSwitchAirtimeTransferResponseDto {
   serviceCategoryId: string;
   name: string;
@@ -16,19 +18,10 @@ export class CreditSwitchAirtimeTransferResponseDto {
             ? 'NINE_MOBILE'
             : formattedIdentifier;
 
-      const logoObj = {
-        MTN: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739372524/mtn_eudpji.png',
-        GLO: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739372524/glo_ta8ya8.png',
-        NINE_MOBILE:
-          'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739372524/9-mobile_qjyndd.png',
-        AIRTEL:
-          'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739372524/airtel_pzriyg.png',
-      };
-
       return {
         serviceCategoryId,
         name,
-        logo: logoObj[identifier],
+        logo: LOGO_MAP[identifier],
         identifier,
       };
     });
