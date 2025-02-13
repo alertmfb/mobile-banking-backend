@@ -83,7 +83,8 @@ export class TransactionService {
 
       if (t.beneficiary) {
         const network = t.beneficiary.networkProvider;
-        (t.beneficiary as any).logo = LOGO_MAP[network] || null;
+        (t.beneficiary as any).logo =
+          LOGO_MAP[network] || LOGO_MAP.BANK_PLACEHOLDER;
       }
 
       return t;
