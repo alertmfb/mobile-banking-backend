@@ -123,6 +123,7 @@ export class BillPaymentService {
       return await this.billProvider.validateElectricityMeterNumber({
         serviceCategoryId: payload.serviceCategoryId,
         entityNumber: payload.cardNumber,
+        vendType: payload.vendType,
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

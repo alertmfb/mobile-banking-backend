@@ -8,6 +8,9 @@ import { plainToInstance } from 'class-transformer';
 import { DataBundleResponseDto } from '../dtos/credit-switch/internet-plan-response.dto';
 import { CreditSwitchProvidersResponseDto } from '../dtos/credit-switch/credit-switch-providers-response.dto';
 import {
+  CreditSwitchBuyAirtime,
+  CreditSwitchBuyData,
+  CreditSwitchBuyElectricity,
   CreditSwitchValidateCableTvSmartCardNumber,
   CreditSwitchValidateElectricityMeterNumber,
 } from './bill-payment.types';
@@ -57,8 +60,30 @@ export class CreditSwitch implements BillPaymentProvider {
     }
   }
 
-  buyAirtime(data: any): Promise<any> {
-    throw new Error('Method not implemented.');
+  async buyAirtime(data: CreditSwitchBuyAirtime): Promise<any> {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/airtime/vend`,
+          {
+            requestId: data.transactionId,
+            serviceCategoryId: data.serviceCategoryId,
+            amount: data.amount,
+            recipient: data.phoneNumber,
+            date: data.date,
+          },
+          {
+            headers: this.header,
+          },
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Bill Provider CS Error: ${error?.response?.data?.message || error.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
+    }
   }
 
   async getInternetCategories(): Promise<any> {
@@ -98,8 +123,31 @@ export class CreditSwitch implements BillPaymentProvider {
     }
   }
 
-  buyInternet(data: any): Promise<any> {
-    throw new Error('Method not implemented.');
+  async buyInternet(data: CreditSwitchBuyData): Promise<any> {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/data/vend`,
+          {
+            requestId: data.transactionId,
+            serviceId: data.serviceCategoryId,
+            amount: data.amount,
+            recipient: data.phoneNumber,
+            date: data.date,
+            productId: data.bundleCode,
+          },
+          {
+            headers: this.header,
+          },
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Bill Provider CS Error: ${error?.response?.data?.message || error.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
+    }
   }
 
   async getElectricityProviders(): Promise<any> {
@@ -150,8 +198,31 @@ export class CreditSwitch implements BillPaymentProvider {
     }
   }
 
-  buyElectricity(data: any): Promise<any> {
-    throw new Error('Method not implemented.');
+  async buyElectricity(data: CreditSwitchBuyElectricity): Promise<any> {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/electricity/vend`,
+          {
+            serviceId: data.serviceCategoryId,
+            requestId: data.transactionId,
+            amount: data.amount,
+            customerName: data.customerName,
+            customerAddress: data.customerAddress,
+            customerAccountId: data.meterNumber,
+          },
+          {
+            headers: this.header,
+          },
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Bill Provider CS Error: ${error?.response?.data?.message || error.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
+    }
   }
 
   async getCableTvProviders(): Promise<any> {

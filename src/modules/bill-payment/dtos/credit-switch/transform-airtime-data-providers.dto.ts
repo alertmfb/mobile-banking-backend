@@ -1,4 +1,4 @@
-import { LOGO_MAP } from "../../../../shared/constants/logo";
+import { LOGO_MAP } from '../../../../shared/constants/logo';
 
 export class CreditSwitchAirtimeTransferResponseDto {
   serviceCategoryId: string;

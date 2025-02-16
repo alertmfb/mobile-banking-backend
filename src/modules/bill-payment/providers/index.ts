@@ -7,7 +7,8 @@ import { Shiga } from './shiga';
 export const BillServiceProvider: Provider = {
   provide: 'BillPaymentProvider',
   useFactory: (httpService: HttpService, configService: ConfigService) => {
-    const providerName = configService.get<string>('BILL_PROVIDER') || 'credit-switch';
+    const providerName =
+      configService.get<string>('BILL_PROVIDER') || 'credit-switch';
     switch (providerName) {
       case 'shiga':
         return new Shiga(httpService, configService);

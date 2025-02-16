@@ -34,29 +34,30 @@ export type ShigaBuyCableTv = {
 };
 
 export type CreditSwitchBuyAirtime = {
-  requestId: string;
-  serviceId: string;
+  transactionId: string;
+  serviceCategoryId: string;
   amount: string;
-  recipient: string;
+  phoneNumber: string;
   date: string;
 };
 
 export type CreditSwitchBuyData = {
-  requestId: string;
-  serviceId: string;
+  transactionId: string;
+  serviceCategoryId: string;
   amount: string;
-  recipient: string;
+  phoneNumber: string;
   date: string;
-  productId: string;
+  bundleCode: string;
 };
 
 export type CreditSwitchBuyElectricity = {
-  serviceId: string;
-  requestId: string;
+  vendType: 'PREPAID' | 'POSTPAID';
+  serviceCategoryId: string;
+  transactionId: string;
   amount: string;
   customerName: string;
   customerAddress: string;
-  customerAccountId: string;
+  meterNumber: string;
 };
 
 export type CreditSwitchBuyCableTv = Partial<{
