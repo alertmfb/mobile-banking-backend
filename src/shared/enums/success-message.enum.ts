@@ -67,6 +67,7 @@ export enum SuccessMessage {
   CABLE_TV_PROVIDERS_RETRIEVED = 'Cable TV providers retrieved successfully',
   CABLE_TV_PLANS_RETRIEVED = 'Cable TV plans retrieved successfully',
   CABLE_TV_PURCHASED = 'Cable TV purchased successfully',
+  CABLE_TV_VALIDATED = 'Cable TV validated successfully',
   ELECTRICITY_PROVIDERS_RETRIEVED = 'Electricity providers retrieved successfully',
   USERS_RETRIEVED = 'Users retrieved successfully',
   NEXT_OF_KIN_SAVED = 'Next of kin saved successfully',

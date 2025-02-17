@@ -133,11 +133,11 @@ export class BillPaymentController {
 
   @Post('cable-tv/validate')
   @UseGuards(JwtAuthGuard)
-  async validateCableTv(@Body() payload: ValidateProviderNumberDto) {
+  async validateCableTvNumber(@Body() payload: ValidateProviderNumberDto) {
     try {
-      const response = await this.billsService.validateMeterNumber(payload);
+      const response = await this.billsService.validateCableTvNumber(payload);
       return new SuccessResponseDto(
-        SuccessMessage.CABLE_TV_PLANS_RETRIEVED,
+        SuccessMessage.CABLE_TV_VALIDATED,
         response,
       );
     } catch (error) {

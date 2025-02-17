@@ -1,5 +1,5 @@
-import {ApiProperty} from '@nestjs/swagger';
-import {IsNotEmpty, IsOptional, IsString} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ValidateProviderNumberDto {
   @IsString()
@@ -20,7 +20,6 @@ export class ValidateProviderNumberDto {
     example: '09012345678',
   })
   cardNumber: string;
-
 
   @ApiProperty({
     description: 'The type of vending',

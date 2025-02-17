@@ -118,12 +118,11 @@ export class BillPaymentService {
     }
   }
 
-  async validateMeterNumber(payload: ValidateProviderNumberDto) {
+  async validateCableTvNumber(payload: ValidateProviderNumberDto) {
     try {
-      return await this.billProvider.validateElectricityMeterNumber({
+      return await this.billProvider.validateCableTvSmartCardNumber({
         serviceCategoryId: payload.serviceCategoryId,
         entityNumber: payload.cardNumber,
-        vendType: payload.vendType,
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -154,6 +153,7 @@ export class BillPaymentService {
       return await this.billProvider.validateElectricityMeterNumber({
         serviceCategoryId: payload.serviceCategoryId,
         entityNumber: payload.cardNumber,
+        vendType: payload.vendType,
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

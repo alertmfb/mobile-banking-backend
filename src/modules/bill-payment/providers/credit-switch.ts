@@ -9,6 +9,7 @@ import { DataBundleResponseDto } from '../dtos/credit-switch/internet-plan-respo
 import { CreditSwitchProvidersResponseDto } from '../dtos/credit-switch/credit-switch-providers-response.dto';
 import {
   CreditSwitchBuyAirtime,
+  CreditSwitchBuyCableTv,
   CreditSwitchBuyData,
   CreditSwitchBuyElectricity,
   CreditSwitchValidateCableTvSmartCardNumber,
@@ -295,7 +296,35 @@ export class CreditSwitch implements BillPaymentProvider {
     }
   }
 
-  buyCableTv(data: any): Promise<any> {
-    throw new Error('Method not implemented.');
+  async buyCableTv(data: CreditSwitchBuyCableTv): Promise<any> {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/cabletv/vend`,
+          {
+            serviceId: data.serviceId,
+            transactionRef: data.transactionRef,
+            smartCardCode: data.smartCardCode,
+            fee: data.fee,
+            subscriptionType: data.subscriptionType,
+            packageName: data.packageName,
+            invoicePeriod: data.invoicePeriod,
+            customerNo: data.customerNo,
+            customerName: data.customerName,
+            amount: data.amount,
+            productsCodes: data.productsCodes,
+          },
+          {
+            headers: this.header,
+          },
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Bill Provider CS Error: ${error?.response?.data?.message || error.message}`,
+        error?.response?.data?.statusCode || error.status,
+      );
+    }
   }
 }
