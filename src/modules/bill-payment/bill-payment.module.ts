@@ -7,11 +7,17 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from '../user/user.module';
 import { TransactionModule } from '../transaction/transaction.module';
 import { BillPaymentRepository } from './bill-payment.repository';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
   imports: [HttpModule, ConfigModule, UserModule, TransactionModule],
   controllers: [BillPaymentController],
-  providers: [BillPaymentService, BillServiceProvider, BillPaymentRepository],
+  providers: [
+    BillPaymentService,
+    BillServiceProvider,
+    BillPaymentRepository,
+    PrismaService,
+  ],
   exports: [BillPaymentService, BillServiceProvider],
 })
 export class BillPaymentModule {}

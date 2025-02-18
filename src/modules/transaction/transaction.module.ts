@@ -8,9 +8,18 @@ import { AccountModule } from '../account/account.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { TransactionRepository } from './transaction.repository';
 import { BillServiceProvider } from '../bill-payment/providers';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
-  imports: [ConfigModule, HttpModule, UserModule, AccountModule],
+  imports: [
+    ConfigModule,
+    HttpModule,
+    UserModule,
+    AccountModule,
+    BullModule.registerQueue({
+      name: 'transactionProcess',
+    }),
+  ],
   controllers: [TransactionController],
   providers: [
     TransactionService,

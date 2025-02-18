@@ -11,12 +11,21 @@ export class TransactionRepository {
     return this.prismaService.transaction.create({ data });
   }
 
-  updateTransaction(id: string, data: Prisma.TransactionUpdateInput) {
+  update(id: string, data: Prisma.TransactionUpdateInput) {
     return this.prismaService.transaction.update({
       where: {
         id,
       },
       data,
+    });
+  }
+
+  findOne(id: string) {
+    return this.prismaService.transaction.findUnique({
+      where: {
+        id,
+      },
+      include: { beneficiary: true },
     });
   }
 
@@ -118,7 +127,7 @@ export class TransactionRepository {
     return this.prismaService.transactionLimit.create({ data });
   }
 
-  updateTransactionLimit(id: string, data: Prisma.TransactionLimitUpdateInput) {
+  updateLimit(id: string, data: Prisma.TransactionLimitUpdateInput) {
     return this.prismaService.transactionLimit.update({
       where: {
         id,

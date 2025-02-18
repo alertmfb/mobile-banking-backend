@@ -416,6 +416,7 @@ model Beneficiary {
   networkProvider NetworkProvider?
   meterNumber     String?
   meterName       String?
+  meterAddress    String?
   meterType       MeterType?
   meterTypeFull   String?
   isBeneficiary   Boolean          @default(false)
@@ -488,9 +489,17 @@ model BillPayments {
   userId        String
   transaction   Transaction       @relation(fields: [transactionId], references: [id])
   transactionId String
+  reference     String?
   biller        String?
   productId     String?
+  bundleCode    String?
   productType   String?
+  token         String?
+  units         String?
+  confirmCode   String?
+  invoicePeriod Int?
+  vendType      String?
+  provider      String?
   amount        Decimal           @db.Decimal(10, 2)
   status        TransactionStatus @default(PENDING)
   createdAt     DateTime          @default(now())

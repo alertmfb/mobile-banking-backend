@@ -17,6 +17,7 @@ import { BuyCableTvDto } from './dtos/buy-cable-tv.dto';
 import { BuyElectricityDto } from './dtos/buy-electricity.dto';
 import { BillPaymentRepository } from './bill-payment.repository';
 import { validate } from 'class-validator';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class BillPaymentService {
@@ -33,6 +34,25 @@ export class BillPaymentService {
     try {
       return await this.billProvider.getAirtimeCategories();
     } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async update(id: string, data: Prisma.BillPaymentsUpdateInput) {
+    try {
+      return await this.billPaymentRepository.update(id, data);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findOneByTransactionId(transactionId: string) {
+    try {
+      return await this.billPaymentRepository.findOneByTransactionId(
+        transactionId,
+      );
+    } catch (error) {
+      console.error(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

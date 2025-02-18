@@ -55,4 +55,6 @@ export enum ErrorMessages {
   COULD_NOT_VALIDATE_PROMO_CODE = 'Could not validate promo code',
   PROMO_CODE_ALREADY_USED = 'Promo code already used',
   TRANSACTION_NOT_FOUND = 'Transaction not found',
+  TRANSACTION_NOT_SUCCESSFUL = 'Transaction not successful',
+  BILL_PAYMENT_NOT_FOUND = 'Bill payment not found',
 }

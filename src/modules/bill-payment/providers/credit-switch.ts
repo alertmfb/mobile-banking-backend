@@ -298,26 +298,31 @@ export class CreditSwitch implements BillPaymentProvider {
 
   async buyCableTv(data: CreditSwitchBuyCableTv): Promise<any> {
     try {
+      const { serviceCategoryId } = data;
+      const url =
+        serviceCategoryId == 'startimes'
+          ? `${this.baseUrl}/startimes/recharge`
+          : `${this.baseUrl}/multichoice/vend`;
+      const payload =
+        serviceCategoryId == 'startimes'
+          ? {
+              smartCardCode: data.cardNumber,
+              fee: data.amount,
+              transactionRef: data.transactionId,
+            }
+          : {
+              serviceId: serviceCategoryId,
+              transactionRef: data.transactionId,
+              customerNo: data.cardNumber,
+              customerName: data.customerName,
+              invoicePeriod: data.invoicePeriod,
+              amount: data.amount,
+              productsCodes: [data.bundleCode],
+            };
       const response = await lastValueFrom(
-        this.httpService.post(
-          `${this.baseUrl}/cabletv/vend`,
-          {
-            serviceId: data.serviceId,
-            transactionRef: data.transactionRef,
-            smartCardCode: data.smartCardCode,
-            fee: data.fee,
-            subscriptionType: data.subscriptionType,
-            packageName: data.packageName,
-            invoicePeriod: data.invoicePeriod,
-            customerNo: data.customerNo,
-            customerName: data.customerName,
-            amount: data.amount,
-            productsCodes: data.productsCodes,
-          },
-          {
-            headers: this.header,
-          },
-        ),
+        this.httpService.post(url, payload, {
+          headers: this.header,
+        }),
       );
       return response.data;
     } catch (error) {

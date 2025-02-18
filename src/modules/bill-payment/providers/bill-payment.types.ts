@@ -61,24 +61,13 @@ export type CreditSwitchBuyElectricity = {
 };
 
 export type CreditSwitchBuyCableTv = Partial<{
-  // StarTimes
-  smartCardCode: string;
-  fee: string;
-
-  // ShowMax
-  subscriptionType: string;
-  packageName: string;
-
-  // MultiChoice
-  serviceId: string;
   invoicePeriod: string;
-  customerNo: string;
+  cardNumber: string;
   customerName: string;
   amount: string;
-  productsCodes: string[];
-
-  // General
-  transactionRef: string;
+  bundleCode: string;
+  transactionId: string;
+  serviceCategoryId: string;
 }>;
 
 export class CreditSwitchValidateCableTvSmartCardNumber {

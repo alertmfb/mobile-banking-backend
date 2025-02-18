@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class BillPaymentRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
@@ -16,6 +18,14 @@ export class BillPaymentRepository {
         id,
       },
       data,
+    });
+  }
+
+  async findOneByTransactionId(transactionId: string) {
+    return this.prismaService.billPayments.findFirst({
+      where: {
+        transactionId,
+      },
     });
   }
 
