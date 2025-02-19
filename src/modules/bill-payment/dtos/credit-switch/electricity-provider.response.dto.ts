@@ -93,8 +93,8 @@ export const CreditSwitchElectricityProvidersResponseDto = [
 
 export function CreditSwitchElectricityServiceId(name: string, type) {
   const electricityObj = {
-    'IKEJA-PREPAID': 'E01E',
-    'IKEJA-POSTPAID': 'E02E',
+    'IKEDC-PREPAID': 'E01E',
+    'IKEDC-POSTPAID': 'E02E',
     'IBEDC-PREPAID': 'E03E', // Ibadan Electricity Distribution Company
     'IBEDC-POSTPAID': 'E04E',
     'EKEDC-PREPAID': 'E05E', // Eko Electricity Distribution Company

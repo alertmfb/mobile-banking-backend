@@ -14,4 +14,9 @@ export class AppController {
   clearDb() {
     return this.appService.clearBd();
   }
+
+  @Get('logos')
+  logos() {
+    return this.appService.logos();
+  }
 }

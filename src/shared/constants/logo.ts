@@ -2,7 +2,7 @@ export const LOGO_MAP = {
   BANK_PLACEHOLDER:
     'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739444943/6c1d17faf616553ed66b9204d4d653c8_ja4cuo.png',
   '215':
-    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964220/Unity_Bank_Logo_vo4jf2.png',
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964148/Bank_Container-1_x7mnm8.png',
   '100685':
     'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964220/TANGERINE_MONEY_Logo_ufhkw2.png',
   '034':
@@ -11,11 +11,70 @@ export const LOGO_MAP = {
     'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964218/PalmPay_Logo_zarsfc.png',
   '090405':
     'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964217/Moniepoint_MFB_Logo_taw8yp.png',
-  '503': 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964218/Opay_Logo_ebwmd7.png',
-  '000036': 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964218/Optimus_Bank_Limited_Logo_l2hrrj.png',
-  '014': 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964217/MAINSTREET_MICROFINANCE_BANK_Logo_ub45lt.png',
-  '060004': 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964216/GREENWICH_Merchant_Bank_Logo_hs2ggd.png',
-  '011': '',
+  '503':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964218/Opay_Logo_ebwmd7.png',
+  '000036':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964218/Optimus_Bank_Limited_Logo_l2hrrj.png',
+  '014':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964217/MAINSTREET_MICROFINANCE_BANK_Logo_ub45lt.png',
+  '060004':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964216/GREENWICH_Merchant_Bank_Logo_hs2ggd.png',
+  '011':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964153/Bank_Container-25_ljafc0.png',
+  '090001':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964207/ASO_Savings_and_Loans_Logo_xnlzwu.png',
+  '100028':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964207/AG_Mortgage_Bank_Logo_kmoixz.png',
+  '090531':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964207/AKU_Microfinance_Bank_Logo_yvjgtv.png',
+  '033':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964158/Bank_Container_gbs8in.png',
+  '044':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964156/Bank_Container-34_opk4md.png',
+  '070':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964156/Bank_Container-33_vowgui.png',
+  '050':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964156/Bank_Container-31_spdbkt.png',
+  '100505':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964156/Bank_Container-32_fssyir.png',
+  '023':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964155/Bank_Container-30_mx6qfe.png',
+  '000103':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964153/Bank_Container-27_msy6ha.png',
+  '214':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964153/Bank_Container-26_yj4dsd.png',
+  '058':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964153/Bank_Container-28_b0roxy.png',
+  '030':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964151/Bank_Container-20_gqljpa.png',
+  '082':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964152/Bank_Container-22_paj4w2.png',
+  '026':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964152/Bank_Container-24_ioyrme.png',
+  '090267':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964152/Bank_Container-23_o9ywzi.png',
+  '101':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964151/Bank_Container-19_iioqle.png',
+  '076':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964150/Bank_Container-18_g8oomu.png',
+  '100002':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964150/Bank_Container-15_jefike.png',
+  '232':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964149/Bank_Container-14_u6s2kx.png',
+  '090175':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964149/Bank_Container-10_khau7a.png',
+  '102':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964148/Bank_Container-8_jilzur.png',
+  '039':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964149/Bank_Container-12_kbsxc7.png',
+  '035':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964149/Bank_Container-3_h0vdly.png',
+  '032':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964149/Bank_Container-9_uyenx2.png',
+  '100489':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964148/Bank_Container-2_ydu5na.png',
+  '057':
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739964148/Bank_Container-4_e2mt2a.png',
   '00000':
     'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1738664330/uploadsblaise/ntfskme0tfmnkn20zsu2.png',
   MTN: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739372524/mtn_eudpji.png',
@@ -24,4 +83,27 @@ export const LOGO_MAP = {
     'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739372524/9-mobile_qjyndd.png',
   AIRTEL:
     'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739372524/airtel_pzriyg.png',
+  JEDC: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971174/idQoaTE8Q2_logos_1_oeh9rb.png',
+  PHEDC:
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971160/PHED_bhkc5f.png',
+  IKEDC:
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971161/id4KvtEeXS_1739953104275_1_qznt9p.png',
+  YEDC: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971159/images_2_vtmagv.png',
+  KEDCO:
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971159/Kano-Electric_1_krjom5.png',
+  IBEDC:
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971158/idygEaOfXz_1739953176136_1_h0ayy8.png',
+  EEDC: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971158/images_1_ggraom.png',
+  EKEDC:
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971157/idiJOiG8s2_1739953074100_1_p97lhv.png',
+  BEDC: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971156/Benin-Electricity-BEDC_1_pv347g.png',
+  KAEDC:
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971156/Artboard-5_1_kk1atd.png',
+  AEDC: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739971156/Artboard-3_1_xr0yo1.png',
+  STARTIMES:
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739970243/StarTimes_Digital_TV_Uganda_Logo_PNG_Vector_PDF_Free_Download_1_siclbg.png',
+  DSTV: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739970242/idB97GzyMP_1734074709836_1_tyts2r.png',
+  SHOWMAX:
+    'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739970242/Icon_1_pl8rbc.png',
+  GOTV: 'https://res.cloudinary.com/dcm6r6nv7/image/upload/v1739970241/Group_egypre.png',
 };

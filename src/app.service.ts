@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './modules/prisma/prisma.service';
-// import { PrismaClient } from '@prisma/client';
+import { LOGO_MAP } from './shared/constants/logo';
 
 @Injectable()
 export class AppService {
+  private readonly enviroment = process.env.NODE_ENV;
+
   constructor(private readonly prismaService: PrismaService) {}
+
   getHello(): string {
     return 'Hello World!';
   }
@@ -34,5 +37,9 @@ export class AppService {
       console.error('Error clearing database:', error);
       throw new Error('Failed to clear the database');
     }
+  }
+
+  async logos() {
+    return LOGO_MAP;
   }
 }
