@@ -24,6 +24,8 @@ services:
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       PRODUCT_CODE: ${PRODUCT_CODE}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER}
+      BILL_PROVIDER: ${BILL_PROVIDER}
     volumes:
       - .:/app
       - /app/node_modules

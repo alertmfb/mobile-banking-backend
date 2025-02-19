@@ -41,6 +41,7 @@ export class TransactionService {
   private readonly environment: string;
   private readonly headers: { apikey: string };
   private readonly logger: Logger;
+  private readonly billProvider: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -65,6 +66,8 @@ export class TransactionService {
       apikey: this.coreBankingAuthKey,
     };
     this.logger = new Logger(TransactionService.name);
+    this.billProvider =
+      this.configService.get<string>('BILL_PROVIDER') || 'credit-switch';
   }
 
   async findOne(id: string) {
@@ -559,7 +562,7 @@ export class TransactionService {
               user: { connect: { id: userId } },
               transaction: { connect: { id: transaction.id } },
               amount: amount,
-              biller: 'credit-switch',
+              biller: this.billProvider,
               productId: serviceCategoryId,
             },
           });
@@ -665,7 +668,7 @@ export class TransactionService {
               user: { connect: { id: userId } },
               transaction: { connect: { id: transaction.id } },
               amount: amount,
-              biller: 'credit-switch',
+              biller: this.billProvider,
               productId: serviceCategoryId,
             },
           });
@@ -780,7 +783,7 @@ export class TransactionService {
             user: { connect: { id: userId } },
             transaction: { connect: { id: transaction.id } },
             amount,
-            biller: 'credit-switch',
+            biller: this.billProvider,
             productId: serviceCategoryId,
             productType: 'TV_BILL',
             provider,
@@ -877,7 +880,7 @@ export class TransactionService {
             user: { connect: { id: userId } },
             transaction: { connect: { id: transaction.id } },
             amount,
-            biller: 'credit-switch',
+            biller: this.billProvider,
             productId: serviceCategoryId,
             productType: 'ELECTRICITY',
             vendType,
