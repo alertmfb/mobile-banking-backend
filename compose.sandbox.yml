@@ -21,6 +21,9 @@ services:
       CORE_BANKING_LIVE_URL: ${CORE_BANKING_LIVE_URL}
       CORE_BANKING_LIVE_KEY: ${CORE_BANKING_LIVE_KEY}
       CREDIT_SWITCH_KEY: ${CREDIT_SWITCH_KEY}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      PRODUCT_CODE: ${PRODUCT_CODE}
     volumes:
       - .:/app
       - /app/node_modules
@@ -38,7 +41,16 @@ services:
     volumes:
       - mobile-backend-sandbox-db-data:/var/lib/postgresql/data
 
+  mobile-backend-redis:
+    image: redis:6.2
+    restart: always
+    ports:
+      - "0:6379"
+    volumes:
+      - mobile-backend-redis-data:/data
+
 volumes:
   mobile-backend-sandbox-db-data:
+  mobile-backend-redis-data:
 
 # confirm db is up

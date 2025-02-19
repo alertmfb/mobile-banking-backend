@@ -35,6 +35,9 @@ jobs:
           echo "CORE_BANKING_LIVE_URL=${{ secrets.CORE_BANKING_LIVE_URL }}" >> .env
           echo "CORE_BANKING_LIVE_KEY=${{ secrets.CORE_BANKING_LIVE_KEY }}" >> .env
           echo "CREDIT_SWITCH_KEY=${{ secrets.CREDIT_SWITCH_KEY }}" >> .env
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+          echo "PRODUCT_CODE=${{ secrets.PRODUCT_CODE }}" >> .env
           docker compose --env-file .env -f compose.sandbox.yml up --build -d
           EOF
 

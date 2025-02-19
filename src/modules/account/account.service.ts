@@ -23,6 +23,7 @@ export class AccountService {
   private readonly headers: { apikey: string };
   private readonly logger: Logger;
   private accountCreationRunning: boolean;
+  private readonly productCode: string;
 
   constructor(
     private readonly accountRepository: AccountRepository,
@@ -45,6 +46,7 @@ export class AccountService {
     };
     this.logger = new Logger(AccountService.name);
     this.accountCreationRunning = false;
+    this.productCode = this.configService.get<string>('PRODUCT_CODE');
   }
 
   async findOne(id: string) {
@@ -206,6 +208,7 @@ export class AccountService {
         PhoneNo: phone,
         Address: address,
         Email: email,
+        ProductCode: this.productCode,
       };
 
       const response = await lastValueFrom(

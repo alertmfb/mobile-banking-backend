@@ -3,11 +3,12 @@ import {
   Controller,
   Get,
   HttpException,
-  HttpStatus, Param,
+  HttpStatus,
+  Param,
   Post,
   Query,
-  UseGuards
-} from "@nestjs/common";
+  UseGuards,
+} from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { JwtAuthGuard } from 'src/shared/guards/jwt.guard';
 import { SuccessMessage } from 'src/shared/enums/success-message.enum';
@@ -20,7 +21,7 @@ import { ConfirmPinDto } from './dtos/confirm-pin-query.dto';
 import { SetPinDto } from '../auth/dto/set-pin.dto';
 import { SetTransactionLimitDto } from './dtos/set-transaction-limit.dto';
 import { GetAllTransactionQueryDto } from './dtos/get-all-transaction-query.dto';
-import { TransactionWebhookDto } from "./dtos/transaction-webhook.dto";
+import { TransactionWebhookDto } from './dtos/transaction-webhook.dto';
 
 @Controller('transaction')
 export class TransactionController {
@@ -28,9 +29,16 @@ export class TransactionController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getTransactions(@Query() payload: GetAllTransactionQueryDto) {
+  async getTransactions(
+    @Query() payload: GetAllTransactionQueryDto,
+    @User() user: JwtPayload,
+  ) {
     try {
-      const resObj = await this.transactionService.getTransactions(payload);
+      const userId = user.id;
+      const resObj = await this.transactionService.getTransactions(
+        payload,
+        userId,
+      );
       return new SuccessResponseDto(
         SuccessMessage.TRANSACTIONS_RETRIEVED,
         resObj,
