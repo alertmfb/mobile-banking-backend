@@ -38,6 +38,8 @@ jobs:
           echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
           echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
           echo "PRODUCT_CODE=${{ secrets.PRODUCT_CODE }}" >> .env
+          echo "STORAGE_PROVIDER=${{ secrets.STORAGE_PROVIDER }}" >> .env
+          echo "BILL_PROVIDER=${{ secrets.BILL_PROVIDER }}" >> .env
           docker compose --env-file .env -f compose.sandbox.yml up --build -d
           EOF
 
@@ -69,5 +71,7 @@ jobs:
           echo "CORE_BANKING_LIVE_URL=${{ secrets.CORE_BANKING_LIVE_URL }}" >> .env
           echo "CORE_BANKING_LIVE_KEY=${{ secrets.CORE_BANKING_LIVE_KEY }}" >> .env
           echo "CREDIT_SWITCH_KEY=${{ secrets.CREDIT_SWITCH_KEY }}" >> .env
+          echo "STORAGE_PROVIDER=${{ secrets.STORAGE_PROVIDER }}" >> .env
+          echo "BILL_PROVIDER=${{ secrets.BILL_PROVIDER }}" >> .env
           docker compose --env-file .env -f compose.prod.yml up --build -d
           EOF
