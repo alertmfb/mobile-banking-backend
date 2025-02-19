@@ -14,10 +14,12 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { decrypt, encrypt, toSmsNo } from 'src/utils/helpers';
 import { MessagingService } from '../messaging/messaging-service.interface';
 import { GetAllUserQueryDto } from './dto/get-all-user-query.dto';
+import { SetEmailDto } from "./dto/set-email.dto";
 
 @Injectable()
 export class UserService {
   private SALT = 10;
+
   constructor(
     @Inject('MessagingProvider')
     private readonly messagingService: MessagingService,
@@ -206,6 +208,59 @@ export class UserService {
 
   async setPin(id: string, payload: SetPinDto) {
     return { id, ...payload };
+  }
+
+  async setEmail(id: string, payload: SetEmailDto) {
+    try {
+      const { email } = payload;
+      const user = await this.userRepository.findById(id);
+      if (!user) {
+        throw new HttpException(
+          ErrorMessages.USER_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (user.isEmailSet || user.email) {
+        throw new HttpException(
+          ErrorMessages.EMAIL_ALREADY_SET,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const emailExist = await this.userRepository.findByEmail(email);
+      if (emailExist) {
+        throw new HttpException(
+          ErrorMessages.EMAIL_EXISTS,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      const otpExpire = new Date(new Date().getTime() + 60 * 60 * 1000);
+
+      const response = await this.messagingService.sendEmailToken({
+        email_address: email,
+        code: otp,
+      });
+
+      if (response.status === 'error') {
+        throw new HttpException(
+          ErrorMessages.EMAIL_NOT_SENT + '. ' + response.message,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      await this.userRepository.update(id, {
+        emailToken: encrypt(email),
+        otp: otp.toString(),
+        otpExpires: otpExpire,
+      });
+
+      return { otp, otpExpire };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async verifyEmail(id: string, payload: VerifyEmailDto) {

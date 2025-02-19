@@ -57,4 +57,6 @@ export enum ErrorMessages {
   TRANSACTION_NOT_FOUND = 'Transaction not found',
   TRANSACTION_NOT_SUCCESSFUL = 'Transaction not successful',
   BILL_PAYMENT_NOT_FOUND = 'Bill payment not found',
+  EMAIL_ALREADY_SET = 'Email already set',
+  EMAIL_EXISTS = 'Email already exists',
 }

@@ -6,6 +6,7 @@ export enum SuccessMessage {
   SIGNUP_COMPLETED = 'Signup completed successfully',
   SIGNIN_INITIATED = 'Signin initiated successfully',
   SET_NATIONALITY = 'Nationality saved successfully',
+  SIGNIN_OTP = 'OTP sent to phone successfully',
   SET_TIN = 'TIN saved successfully',
   SET_BVN = 'BVN saved successfully',
   SET_NIN = 'NIN saved successfully',
